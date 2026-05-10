@@ -139,7 +139,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
         padding: '8px',
         gap: 8,
       }}>
@@ -205,7 +206,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           flexDirection: 'column',
           alignItems: 'center',
           gap: 6,
-          paddingBottom: isMyBidTurn ? 180 : 8,
+          paddingBottom: isMyBidTurn ? 320 : 8,
         }}>
           {/* My stats bar */}
           <div style={{
