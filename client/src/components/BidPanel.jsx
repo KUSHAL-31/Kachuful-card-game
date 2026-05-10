@@ -11,24 +11,25 @@ export default function BidPanel({ cardsThisRound, onBid, forbiddenBid, trumpSui
       bottom: 0,
       left: 0,
       right: 0,
-      background: '#0F2544',
-      borderTop: '2px solid #D4A017',
+      background: 'linear-gradient(180deg, rgba(16,39,67,0.96), rgba(6,16,30,0.98))',
+      borderTop: '2px solid #D6A84F',
       borderRadius: '16px 16px 0 0',
       padding: '20px 16px 28px',
       animation: 'slide-up 0.35s ease',
       zIndex: 200,
-      boxShadow: '0 -8px 32px rgba(0,0,0,0.5)',
+      boxShadow: '0 -18px 44px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
+      backdropFilter: 'blur(14px)',
     }}>
       <div style={{
         textAlign: 'center',
         marginBottom: 12,
         fontFamily: 'Playfair Display, serif',
         fontSize: '1.1rem',
-        color: '#F5F0E8',
+        color: '#FFF6E6',
       }}>
         Place Your Bid
       </div>
-      <div style={{ textAlign: 'center', fontSize: '0.7rem', color: '#A89B8C', marginBottom: 16 }}>
+      <div style={{ textAlign: 'center', fontSize: '0.84rem', color: '#C8BA9D', marginBottom: 16, fontWeight: 700 }}>
         Round {currentRound} · {cardsThisRound} trick{cardsThisRound !== 1 ? 's' : ''} available
       </div>
 
@@ -55,23 +56,24 @@ export default function BidPanel({ cardsThisRound, onBid, forbiddenBid, trumpSui
                 fontWeight: 700,
                 cursor: isForbidden ? 'not-allowed' : 'pointer',
                 background: isSelected
-                  ? '#D4A017'
+                  ? 'linear-gradient(180deg, #FFE08A, #D6A84F 62%, #AD7B2F)'
                   : isForbidden
                   ? 'rgba(255,255,255,0.05)'
-                  : 'rgba(255,255,255,0.1)',
+                  : 'rgba(255,255,255,0.09)',
                 color: isSelected
-                  ? '#0F2544'
+                  ? '#091626'
                   : isForbidden
                   ? '#555'
-                  : '#F5F0E8',
+                  : '#FFF6E6',
                 border: isSelected
-                  ? '2px solid #FFD700'
+                  ? '2px solid #FFE08A'
                   : isForbidden
                   ? '1px dashed #555'
                   : '1px solid rgba(255,255,255,0.15)',
                 opacity: isForbidden ? 0.5 : 1,
                 transition: 'all 0.15s ease',
                 position: 'relative',
+                boxShadow: isSelected ? '0 8px 18px rgba(214,168,79,0.26), inset 0 1px 0 rgba(255,255,255,0.55)' : 'none',
               }}
             >
               {bid}
@@ -94,8 +96,8 @@ export default function BidPanel({ cardsThisRound, onBid, forbiddenBid, trumpSui
       {forbiddenBid !== null && forbiddenBid !== undefined && (
         <div style={{
           textAlign: 'center',
-          fontSize: '0.6rem',
-          color: '#A89B8C',
+          fontSize: '0.76rem',
+          color: '#C8BA9D',
           marginBottom: 12,
         }}>
           Bid <strong style={{ color: '#EF4444' }}>{forbiddenBid}</strong> is forbidden (you are the Dealer)
@@ -109,15 +111,16 @@ export default function BidPanel({ cardsThisRound, onBid, forbiddenBid, trumpSui
             if (selected !== null) onBid(selected);
           }}
           style={{
-            background: selected !== null ? '#D4A017' : 'rgba(255,255,255,0.1)',
-            color: selected !== null ? '#0F2544' : '#555',
+            background: selected !== null ? 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)' : 'rgba(255,255,255,0.1)',
+            color: selected !== null ? '#091626' : '#6F665A',
             fontWeight: 700,
             fontSize: '1rem',
             padding: '10px 40px',
             borderRadius: 8,
             cursor: selected !== null ? 'pointer' : 'not-allowed',
             transition: 'all 0.15s ease',
-            border: 'none',
+            border: selected !== null ? '1px solid rgba(255,224,138,0.68)' : '1px solid rgba(255,255,255,0.08)',
+            boxShadow: selected !== null ? '0 10px 24px rgba(214,168,79,0.24), inset 0 1px 0 rgba(255,255,255,0.55)' : 'none',
           }}
         >
           Confirm Bid {selected !== null ? `— ${selected}` : ''}
