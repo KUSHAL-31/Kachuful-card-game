@@ -37,7 +37,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
 
   const handleInvite = async () => {
     const joinUrl = `${window.location.origin}/?room=${room?.roomCode}`;
-    const message = `🃏 Think you can outsmart everyone at the table? 😏\nA crazy Kachuful showdown is about to begin — where sharp minds, risky moves, and lucky cards decide the winner! 🔥✨\n\n🎮 Join here: *${joinUrl}*\nor use Room Code: *${room?.roomCode}*\n\nBring your best game face… and maybe a little luck 👀`;
+    const message = `🃏 Think you can outsmart everyone at the table? 😏\nA crazy Kachuful showdown is about to begin — where sharp minds, risky moves, and bold cards decide the winner! 🔥✨\n\n🎮 Join here: *${joinUrl}*\nor use Room Code: *${room?.roomCode}*\n\nBring your best game face and maybe a little luck 👀`;
 
     try {
       if (navigator.share) {
