@@ -43,7 +43,7 @@ function joinRoom(roomCode, playerId, playerName) {
   const room = rooms.get(roomCode.toUpperCase());
   if (!room) return { error: 'Room not found' };
   if (room.status === 'playing') return { error: 'Game already in progress' };
-  if (room.players.length >= 6) return { error: 'Room is full' };
+  if (room.players.length >= 7) return { error: 'Room is full' };
 
   // Check if player is rejoining (same name reconnect attempt)
   const existingIndex = room.players.findIndex(p => p.name === playerName && !p.isConnected);

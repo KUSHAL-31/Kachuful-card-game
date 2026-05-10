@@ -1,13 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }) {
   const [copied, setCopied] = useState(false);
+  const [invited, setInvited] = useState(false);
 
   const copyCode = () => {
     navigator.clipboard.writeText(room.roomCode).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  };
+
+  const inviteUrl = `${window.location.origin}/?room=${room?.roomCode}`;
+
+  const handleInvite = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join my Kachuphul game! 🃏',
+        text: `Hey! Join my Kachuphul card game. Room code: ${room?.roomCode}`,
+        url: inviteUrl,
+      });
+    } else {
+      navigator.clipboard.writeText(inviteUrl).then(() => {
+        setInvited(true);
+        setTimeout(() => setInvited(false), 2500);
+      });
+    }
   };
 
   const players = room?.players || [];
@@ -58,22 +76,39 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
           }}>
             {room?.roomCode}
           </div>
-          <button
-            onClick={copyCode}
-            style={{
-              marginTop: 8,
-              padding: '6px 16px',
-              borderRadius: 6,
-              background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
-              border: copied ? '1px solid #22C55E' : '1px solid rgba(255,255,255,0.1)',
-              color: copied ? '#22C55E' : '#A89B8C',
-              fontSize: '0.7rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
-            {copied ? '✓ Copied!' : 'Copy Code'}
-          </button>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}>
+            <button
+              onClick={copyCode}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 6,
+                background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
+                border: copied ? '1px solid #22C55E' : '1px solid rgba(255,255,255,0.1)',
+                color: copied ? '#22C55E' : '#A89B8C',
+                fontSize: '0.7rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {copied ? '✓ Copied!' : 'Copy Code'}
+            </button>
+            <button
+              onClick={handleInvite}
+              style={{
+                padding: '6px 16px',
+                borderRadius: 6,
+                background: invited ? 'rgba(34,197,94,0.15)' : 'rgba(212,160,23,0.15)',
+                border: invited ? '1px solid #22C55E' : '1px solid rgba(212,160,23,0.5)',
+                color: invited ? '#22C55E' : '#D4A017',
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {invited ? '✓ Link Copied!' : '🔗 Send Invite'}
+            </button>
+          </div>
         </div>
 
         {/* Players list */}
@@ -88,7 +123,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
               PLAYERS
             </span>
             <span style={{ fontSize: '0.7rem', color: '#A89B8C' }}>
-              {players.length} / 6
+              {players.length} / 7
             </span>
           </div>
 

@@ -31,7 +31,8 @@ function getCardsForRound(roundNumber, maxCards) {
 }
 
 function getMaxCards(numPlayers) {
-  return Math.floor(52 / numPlayers);
+  // Cap at 10 for ≤5 players so total rounds never exceed 19
+  return Math.min(Math.floor(52 / numPlayers), 10);
 }
 
 function getTotalRounds(maxCards) {

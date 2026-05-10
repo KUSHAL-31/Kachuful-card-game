@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 
 export default function LandingScreen({ onJoined }) {
   const [name, setName] = useState('');
-  const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState('create'); // 'create' | 'join'
+
+  // Pre-fill room code and switch to join tab if ?room= is in the URL
+  const params = new URLSearchParams(window.location.search);
+  const prefilledCode = params.get('room')?.toUpperCase() || '';
+  const [joinCode, setJoinCode] = useState(prefilledCode);
+  const [tab, setTab] = useState(prefilledCode ? 'join' : 'create');
 
   const SERVER = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
