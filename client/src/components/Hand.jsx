@@ -46,8 +46,10 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
       <div style={{
         position: 'relative',
         width: Math.min(totalWidth, window.innerWidth - 32),
-        height: isMobile ? 95 : 110,
+        height: isMobile ? 120 : 130,
+        paddingTop: 16,
         overflowX: totalWidth > window.innerWidth - 32 ? 'auto' : 'visible',
+        overflowY: 'visible',
       }}>
         {sorted.map((card, i) => {
           const isSelected = selectedCard?.suit === card.suit && selectedCard?.rank === card.rank;
@@ -60,7 +62,7 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
               style={{
                 position: 'absolute',
                 left: i * overlapOffset,
-                top: 0,
+                top: 16,
                 zIndex: isSelected ? 100 : i + 1,
                 transition: 'left 0.2s ease',
               }}
@@ -71,7 +73,7 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
                 disabled={disabled}
                 selected={isSelected}
                 isTrump={card.suit === trumpSuit}
-                size={isMobile ? 'mobile' : 'normal'}
+                size="normal"
               />
             </div>
           );
