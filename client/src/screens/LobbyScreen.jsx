@@ -14,7 +14,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
   const inviteUrl = `${window.location.origin}/?room=${room?.roomCode}`;
 
   const handleInvite = () => {
-    const message = `🃏 Think you can outsmart everyone at the table? 😏\nA crazy Kachuful showdown is about to begin — where sharp minds, risky moves, and lucky cards decide the winner! 🔥✨\n\n🎮 Join the fun now: *${window.location.origin}*\n🎟️ Room Code: *${room?.roomCode}*\n\nBring your best game face… and maybe a little luck 👀`;
+    const message = `🃏 Think you can outsmart everyone at the table? 😏\nA crazy Kachuful showdown is about to begin — where sharp minds, risky moves, and lucky cards decide the winner! 🔥✨\n\n🎮 Join here: *${window.location.origin}/?room=${room?.roomCode}*\nor use Room Code: *${room?.roomCode}*\n\nBring your best game face… and maybe a little luck 👀`;
     if (navigator.share) {
       navigator.share({
         title: 'Join my Kachuful game!',

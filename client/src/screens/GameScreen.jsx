@@ -169,11 +169,11 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           })}
         </div>
 
-        {/* Center: trick area + trump */}
+        {/* Center: trick area (+ trump on desktop) */}
         <div style={{
           flex: 1,
           display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
+          flexDirection: 'row',
           gap: 8,
           alignItems: 'center',
           justifyContent: 'center',
@@ -188,14 +188,16 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
             />
           </div>
 
-          <div style={{ flexShrink: 0 }}>
-            <TrumpIndicator
-              trumpSuit={trumpSuit}
-              currentRound={currentRound}
-              totalRounds={totalRounds}
-              cardsThisRound={cardsThisRound}
-            />
-          </div>
+          {!isMobile && (
+            <div style={{ flexShrink: 0 }}>
+              <TrumpIndicator
+                trumpSuit={trumpSuit}
+                currentRound={currentRound}
+                totalRounds={totalRounds}
+                cardsThisRound={cardsThisRound}
+              />
+            </div>
+          )}
         </div>
 
         {/* My info + hand */}
@@ -207,6 +209,22 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           gap: 6,
           paddingBottom: isMyBidTurn ? 320 : 8,
         }}>
+          {/* My stats bar + trump (mobile: side by side) */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            width: '100%',
+            justifyContent: 'center',
+          }}>
+          {isMobile && (
+            <TrumpIndicator
+              trumpSuit={trumpSuit}
+              currentRound={currentRound}
+              totalRounds={totalRounds}
+              cardsThisRound={cardsThisRound}
+            />
+          )}
           {/* My stats bar */}
           <div style={{
             display: 'flex',
@@ -241,6 +259,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
             <span style={{ fontSize: '0.65rem', color: '#D4A017', fontWeight: 700 }}>
               {scores[playerId] || 0} pts
             </span>
+          </div>
           </div>
 
           {/* Hand */}
