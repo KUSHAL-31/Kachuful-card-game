@@ -16,8 +16,8 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
   const handleInvite = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'Join my Kachuphul game! 🃏',
-        text: `Hey! Join my Kachuphul card game. Room code: ${room?.roomCode}`,
+        title: 'Join my Kachuful game! 🃏',
+        text: `Hey! Come join me for a game of Kachuful — a mind game with cards. Use room code ${room?.roomCode} or just tap the link to join directly!`,
         url: inviteUrl,
       });
     } else {
