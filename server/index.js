@@ -42,7 +42,7 @@ const socketRoomMap = new Map();
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
-  socket.on('join_room', ({ roomCode, playerName }) => {
+  socket.on('join_room', ({ roomCode, playerName, isCreating = false }) => {
     if (!roomCode || !playerName) {
       return socket.emit('error', { message: 'Room code and player name required' });
     }
@@ -50,8 +50,10 @@ io.on('connection', (socket) => {
     const code = roomCode.toUpperCase().trim();
     let room;
 
-    // Check if room exists; if not, create it (happens when create flow is used)
     if (!roomExists(code)) {
+      if (!isCreating) {
+        return socket.emit('error', { message: 'Room not found. Ask the host to create a new room.' });
+      }
       room = createRoom(socket.id, playerName.trim(), code);
     } else {
       const result = joinRoom(code, socket.id, playerName.trim());

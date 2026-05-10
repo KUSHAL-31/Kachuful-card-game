@@ -237,7 +237,7 @@ export default function App() {
   const handleJoined = ({ roomCode, playerName, isCreating }) => {
     playerNameRef.current = playerName;
     roomCodeRef.current = roomCode;
-    getSocket().emit('join_room', { roomCode, playerName });
+    getSocket().emit('join_room', { roomCode, playerName, isCreating });
   };
 
   const handleStart = () => {
