@@ -4,6 +4,7 @@ export default function LandingScreen({ onJoined }) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isMobile = window.innerWidth < 768;
 
   // Pre-fill room code and switch to join tab if ?room= is in the URL
   const params = new URLSearchParams(window.location.search);
@@ -58,7 +59,7 @@ export default function LandingScreen({ onJoined }) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 24,
+      padding: '24px 24px 86px',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -218,38 +219,35 @@ export default function LandingScreen({ onJoined }) {
 
       {/* Footer */}
       <div style={{
-        marginTop: 28,
+        position: 'fixed',
+        left: '50%',
+        bottom: 'calc(14px + env(safe-area-inset-bottom))',
+        transform: 'translateX(-50%)',
+        zIndex: 5,
+        width: isMobile ? 'calc(100vw - 32px)' : 'auto',
+        maxWidth: '440px',
         textAlign: 'center',
-        padding: '14px 20px',
-        background: 'rgba(7,20,38,0.66)',
-        borderRadius: 12,
-        border: '1px solid rgba(255,224,138,0.22)',
-        boxShadow: '0 12px 28px rgba(0,0,0,0.24)',
-        width: 'min(440px, 100%)',
+        padding: isMobile ? '9px 12px' : '10px 16px',
+        background: 'rgba(7,20,38,0.48)',
+        borderRadius: 999,
+        border: '1px solid rgba(255,224,138,0.18)',
+        boxShadow: '0 12px 26px rgba(0,0,0,0.18)',
+        color: '#D8C7A7',
+        fontSize: isMobile ? '0.84rem' : '0.92rem',
+        fontWeight: 800,
+        backdropFilter: 'blur(12px)',
+        whiteSpace: isMobile ? 'normal' : 'nowrap',
       }}>
-        <div style={{ fontSize: '0.65rem', color: '#C8BA9D', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 4 }}>
-          DEVELOPED BY
-        </div>
-        <div style={{ fontSize: '1rem', fontWeight: 700, color: '#FFF6E6', marginBottom: 6 }}>
-          Kushal Soni
-        </div>
-        <div style={{ fontSize: '0.82rem', color: '#C8BA9D' }}>
-          To know more:{' '}
-          <a
-            href="https://github.com/KUSHAL-31"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: '#FFE08A',
-              textDecoration: 'none',
-              fontWeight: 600,
-              borderBottom: '1px solid rgba(255,224,138,0.45)',
-              paddingBottom: 1,
-            }}
-          >
-            github.com/KUSHAL-31
-          </a>
-        </div>
+        Developed by <span style={{ color: '#FFF6E6' }}>Kushal Soni</span>
+        <span style={{ color: '#FFE08A', margin: '0 8px' }}>·</span>
+        <a
+          href="https://github.com/KUSHAL-31"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#FFE08A', textDecoration: 'none', borderBottom: '1px solid rgba(255,224,138,0.42)' }}
+        >
+          GitHub
+        </a>
       </div>
     </div>
   );
