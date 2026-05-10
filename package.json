@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Kachuful - Real-time multiplayer trick-taking card game",
   "scripts": {
+    "start": "node server/index.js",
     "server": "node server/index.js",
     "client": "cd client && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
