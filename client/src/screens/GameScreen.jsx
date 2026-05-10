@@ -41,7 +41,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
   const isMyTurn = currentPlayer?.id === playerId && phase === 'playing';
   const isMyBidTurn = currentBidder?.id === playerId && phase === 'bidding';
 
-  const otherPlayers = players.filter(p => p.id !== playerId);
+  const otherPlayers = players;
 
   const getForbiddenBid = () => {
     if (currentBidder?.id !== playerId) return null;
@@ -164,6 +164,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
                 isCurrentTurn={seatIdx === currentTurnIndex && phase === 'playing'}
                 isCurrentBidder={seatIdx === currentBidderSeatIndex && phase === 'bidding'}
                 phase={phase}
+                isMe={player.id === playerId}
               />
             );
           })}
