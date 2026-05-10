@@ -1,7 +1,7 @@
 {
-  "name": "kachuphul",
+  "name": "kachuful",
   "version": "1.0.0",
-  "description": "Kachuphul - Real-time multiplayer trick-taking card game",
+  "description": "Kachuful - Real-time multiplayer trick-taking card game",
   "scripts": {
     "server": "node server/index.js",
     "client": "cd client && npm run dev",

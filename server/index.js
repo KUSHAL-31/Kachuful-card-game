@@ -371,5 +371,5 @@ function sanitizeRoom(room) {
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`Kachuphul server running on port ${PORT}`);
+  console.log(`Kachuful server running on port ${PORT}`);
 });

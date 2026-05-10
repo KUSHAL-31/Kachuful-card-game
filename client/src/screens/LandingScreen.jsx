@@ -66,7 +66,7 @@ export default function LandingScreen({ onJoined }) {
           lineHeight: 1,
           textShadow: '0 2px 8px rgba(0,0,0,0.4)',
         }}>
-          Kachuphul
+          Kachuful
         </div>
         <div style={{
           fontFamily: 'Playfair Display, serif',

@@ -98,7 +98,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
         flexShrink: 0,
       }}>
         <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#D4A017' }}>
-          Kachuphul
+          Kachuful
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{

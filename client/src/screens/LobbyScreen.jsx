@@ -30,7 +30,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
         marginBottom: 4,
         textAlign: 'center',
       }}>
-        Kachuphul
+        Kachuful
       </div>
       <div style={{ fontSize: '0.8rem', color: '#A89B8C', marginBottom: 32, textAlign: 'center' }}>
         Waiting for players...
