@@ -52,6 +52,8 @@ export default function Card({
       ? { width: 42, height: 59 }
       : size === 'trick'
       ? { width: 70, height: 98 }
+      : size === 'mobile'
+      ? { width: 72, height: 101 }
       : { width: 62, height: 87 };
     return <CardBack style={{ ...dims, ...style }} />;
   }
@@ -66,6 +68,8 @@ export default function Card({
     ? { width: 42, height: 59, cornerFontSize: '0.45rem', centerFontSize: '1rem', rankFontSize: '0.6rem' }
     : size === 'trick'
     ? { width: 70, height: 98, cornerFontSize: '0.6rem', centerFontSize: '1.6rem', rankFontSize: '0.8rem' }
+    : size === 'mobile'
+    ? { width: 72, height: 101, cornerFontSize: '0.6rem', centerFontSize: '1.5rem', rankFontSize: '0.75rem' }
     : { width: 62, height: 87, cornerFontSize: '0.55rem', centerFontSize: '1.4rem', rankFontSize: '0.7rem' };
 
   const isClickable = !!onClick && !disabled;

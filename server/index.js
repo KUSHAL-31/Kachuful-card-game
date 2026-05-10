@@ -5,7 +5,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 
-const { createRoom, joinRoom, getRoom, removePlayer, markDisconnected, roomExists } = require('./roomManager');
+const { createRoom, joinRoom, getRoom, removePlayer, markDisconnected, roomExists, deleteRoom, getRoomCount } = require('./roomManager');
 const { initGame, startRound, placeBid, playCard, getForbiddenBid, getWinners } = require('./gameEngine');
 
 const app = express();
@@ -23,7 +23,9 @@ app.post('/room/create', (req, res) => {
   if (!playerName || !playerName.trim()) {
     return res.status(400).json({ error: 'Player name required' });
   }
-  // We create the room with a placeholder ID — real ID comes from socket
+  if (getRoomCount() >= 3) {
+    return res.status(503).json({ error: 'Maximum room creation limit reached. Please try after sometime.' });
+  }
   const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   res.json({ roomCode });
 });
@@ -54,7 +56,9 @@ io.on('connection', (socket) => {
       if (!isCreating) {
         return socket.emit('error', { message: 'Room not found. Ask the host to create a new room.' });
       }
-      room = createRoom(socket.id, playerName.trim(), code);
+      const created = createRoom(socket.id, playerName.trim(), code);
+      if (created.error) return socket.emit('error', { message: created.error });
+      room = created;
     } else {
       const result = joinRoom(code, socket.id, playerName.trim());
       if (result.error) {
@@ -293,8 +297,13 @@ function handleLeave(socket, roomCode, explicit) {
       newHostId: room.hostId,
     });
 
-    // Check if only 1 player remains connected
     const connectedCount = room.players.filter(p => p.isConnected).length;
+
+    if (connectedCount === 0) {
+      deleteRoom(roomCode);
+      return;
+    }
+
     if (connectedCount <= 1 && room.status === 'playing') {
       room.status = 'finished';
       io.to(roomCode).emit('game_over', {

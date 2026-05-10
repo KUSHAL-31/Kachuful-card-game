@@ -24,10 +24,11 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
   };
 
   const isMobile = window.innerWidth < 768;
-  const overlapOffset = isMobile ? 28 : 32;
+  const cardWidth = isMobile ? 72 : 75;
+  const overlapOffset = isMobile ? 42 : 32;
   const totalWidth = sorted.length > 1
-    ? (sorted.length - 1) * overlapOffset + (isMobile ? 60 : 75)
-    : isMobile ? 60 : 75;
+    ? (sorted.length - 1) * overlapOffset + cardWidth
+    : cardWidth;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -46,7 +47,7 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
       <div style={{
         position: 'relative',
         width: Math.min(totalWidth, window.innerWidth - 32),
-        height: isMobile ? 120 : 130,
+        height: isMobile ? 135 : 130,
         paddingTop: 16,
         overflowX: totalWidth > window.innerWidth - 32 ? 'auto' : 'visible',
         overflowY: 'visible',
@@ -73,7 +74,7 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
                 disabled={disabled}
                 selected={isSelected}
                 isTrump={card.suit === trumpSuit}
-                size="normal"
+                size={isMobile ? 'mobile' : 'normal'}
               />
             </div>
           );
