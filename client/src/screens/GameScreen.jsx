@@ -169,11 +169,11 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           })}
         </div>
 
-        {/* Center: trick area (+ trump on desktop) */}
+        {/* Center: trick area + trump */}
         <div style={{
           flex: 1,
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: isMobile ? 'column' : 'row',
           gap: 8,
           alignItems: 'center',
           justifyContent: 'center',
@@ -188,19 +188,17 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
             />
           </div>
 
-          {!isMobile && (
-            <div style={{ flexShrink: 0 }}>
-              <TrumpIndicator
-                trumpSuit={trumpSuit}
-                currentRound={currentRound}
-                totalRounds={totalRounds}
-                cardsThisRound={cardsThisRound}
-              />
-            </div>
-          )}
+          <div style={{ flexShrink: 0 }}>
+            <TrumpIndicator
+              trumpSuit={trumpSuit}
+              currentRound={currentRound}
+              totalRounds={totalRounds}
+              cardsThisRound={cardsThisRound}
+            />
+          </div>
         </div>
 
-        {/* My info + hand */}
+        {/* Hand */}
         <div style={{
           flexShrink: 0,
           display: 'flex',
@@ -209,58 +207,6 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           gap: 6,
           paddingBottom: isMyBidTurn ? 320 : 8,
         }}>
-          {/* My stats bar + trump (mobile: side by side) */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            width: '100%',
-            justifyContent: 'center',
-          }}>
-          {isMobile && (
-            <TrumpIndicator
-              trumpSuit={trumpSuit}
-              currentRound={currentRound}
-              totalRounds={totalRounds}
-              cardsThisRound={cardsThisRound}
-            />
-          )}
-          {/* My stats bar */}
-          <div style={{
-            display: 'flex',
-            gap: 12,
-            alignItems: 'center',
-            padding: '6px 14px',
-            background: 'rgba(15,37,68,0.7)',
-            borderRadius: 20,
-            border: isMyTurn || isMyBidTurn
-              ? '1.5px solid #FFD700'
-              : '1px solid rgba(255,255,255,0.08)',
-            animation: isMyTurn || isMyBidTurn ? 'glow-gold 1.5s ease infinite' : 'none',
-          }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F5F0E8' }}>
-              {me?.name || 'You'}
-            </span>
-            {players.findIndex(p => p.id === playerId) === compulsoryPlayerIndex && (
-              <span style={{ fontSize: '0.55rem', color: '#D4A017', fontWeight: 700 }}>DEALER</span>
-            )}
-            {bids[playerId] !== undefined && (
-              <span style={{ fontSize: '0.65rem', color: '#A89B8C' }}>
-                Bid: <strong style={{ color: '#F5F0E8' }}>{bids[playerId]}</strong>
-              </span>
-            )}
-            {phase === 'playing' && tricksWon[playerId] !== undefined && (
-              <span style={{ fontSize: '0.65rem', color: '#A89B8C' }}>
-                Won: <strong style={{
-                  color: tricksWon[playerId] === bids[playerId] ? '#22C55E' : '#F5F0E8',
-                }}>{tricksWon[playerId]}</strong>
-              </span>
-            )}
-            <span style={{ fontSize: '0.65rem', color: '#D4A017', fontWeight: 700 }}>
-              {scores[playerId] || 0} pts
-            </span>
-          </div>
-          </div>
 
           {/* Hand */}
           <Hand
