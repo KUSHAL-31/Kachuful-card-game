@@ -53,9 +53,15 @@ function joinRoom(roomCode, playerId, playerName) {
   // Check if player is rejoining (same name reconnect attempt)
   const existingIndex = room.players.findIndex(p => p.name === playerName && !p.isConnected);
   if (existingIndex !== -1) {
+    const oldId = room.players[existingIndex].id;
     room.players[existingIndex].id = playerId;
     room.players[existingIndex].isConnected = true;
     room.lastActivity = Date.now();
+
+    // If this player was the host, update hostId to new socket ID
+    if (room.hostId === oldId) {
+      room.hostId = playerId;
+    }
 
     // Update hands key in game state if game is running
     if (room.game && room.game.hands) {
