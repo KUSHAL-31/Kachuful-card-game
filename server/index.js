@@ -280,7 +280,7 @@ function handleLeave(socket, roomCode, explicit) {
 
   socketRoomMap.delete(socket.id);
 
-  if (explicit || room.status === 'lobby') {
+  if (explicit) {
     removePlayer(roomCode, socket.id);
     socket.leave(roomCode);
     io.to(roomCode).emit('room_updated', {
@@ -288,6 +288,28 @@ function handleLeave(socket, roomCode, explicit) {
         id: p.id, name: p.name, seatIndex: p.seatIndex, isConnected: p.isConnected,
       })),
     });
+  } else if (room.status === 'lobby') {
+    // Brief disconnect in lobby — give 15s grace period before removing
+    markDisconnected(roomCode, socket.id);
+    io.to(roomCode).emit('room_updated', {
+      players: room.players.map(p => ({
+        id: p.id, name: p.name, seatIndex: p.seatIndex, isConnected: p.isConnected,
+      })),
+    });
+    setTimeout(() => {
+      const currentRoom = getRoom(roomCode);
+      if (!currentRoom) return;
+      const player = currentRoom.players.find(p => p.id === socket.id);
+      // Only remove if still disconnected (didn't reconnect)
+      if (player && !player.isConnected) {
+        removePlayer(roomCode, socket.id);
+        io.to(roomCode).emit('room_updated', {
+          players: (getRoom(roomCode)?.players || []).map(p => ({
+            id: p.id, name: p.name, seatIndex: p.seatIndex, isConnected: p.isConnected,
+          })),
+        });
+      }
+    }, 15000);
   } else {
     // Mid-game disconnect — mark disconnected, wait for reconnect
     markDisconnected(roomCode, socket.id);
