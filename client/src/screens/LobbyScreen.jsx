@@ -69,10 +69,12 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
           </div>
           <div style={{
             fontFamily: 'Playfair Display, serif',
+            fontVariantNumeric: 'lining-nums',
             fontSize: '2.5rem',
             color: '#D4A017',
             letterSpacing: '0.3em',
             fontWeight: 700,
+            lineHeight: 1,
           }}>
             {room?.roomCode}
           </div>
@@ -110,6 +112,22 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
             </button>
           </div>
         </div>
+
+        {/* Invite note */}
+        {isHost && (
+          <div style={{
+            fontSize: '0.6rem',
+            color: '#A89B8C',
+            textAlign: 'center',
+            padding: '6px 10px',
+            marginBottom: 8,
+            background: 'rgba(255,255,255,0.03)',
+            borderRadius: 6,
+            lineHeight: 1.5,
+          }}>
+            After sharing invite, return to this screen within 60s to keep the room active.
+          </div>
+        )}
 
         {/* Players list */}
         <div style={{ marginBottom: 20 }}>

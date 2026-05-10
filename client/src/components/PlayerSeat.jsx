@@ -23,16 +23,8 @@ export default function PlayerSeat({
     gap: 4,
     padding: '8px 10px',
     borderRadius: 12,
-    background: isActive
-      ? 'rgba(255,215,0,0.12)'
-      : isMe
-      ? 'rgba(212,160,23,0.1)'
-      : 'rgba(15,37,68,0.6)',
-    border: isActive
-      ? '1.5px solid #FFD700'
-      : isMe
-      ? '1.5px solid rgba(212,160,23,0.6)'
-      : '1px solid rgba(255,255,255,0.08)',
+    background: isActive ? 'rgba(255,215,0,0.12)' : 'rgba(15,37,68,0.6)',
+    border: isActive ? '1.5px solid #FFD700' : '1px solid rgba(255,255,255,0.08)',
     minWidth: 80,
     maxWidth: 110,
     transition: 'all 0.3s ease',
@@ -65,7 +57,7 @@ export default function PlayerSeat({
       <div style={{
         fontSize: '0.7rem',
         fontWeight: 600,
-        color: isActive ? '#FFD700' : isMe ? '#D4A017' : '#F5F0E8',
+        color: isActive ? '#FFD700' : '#F5F0E8',
         textAlign: 'center',
         maxWidth: 90,
         overflow: 'hidden',
