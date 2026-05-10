@@ -38,6 +38,17 @@ export default function App() {
   useEffect(() => {
     const s = getSocket();
 
+    s.on('connect', () => {
+      // Re-register with server after reconnect if we were in a room
+      if (roomCodeRef.current && playerNameRef.current) {
+        s.emit('join_room', {
+          roomCode: roomCodeRef.current,
+          playerName: playerNameRef.current,
+          isCreating: false,
+        });
+      }
+    });
+
     s.on('room_joined', ({ room, playerId: pid, isHost: host }) => {
       setRoom(room);
       setPlayerId(pid);
@@ -211,6 +222,7 @@ export default function App() {
     });
 
     return () => {
+      s.off('connect');
       s.off('room_joined');
       s.off('room_updated');
       s.off('game_started');
