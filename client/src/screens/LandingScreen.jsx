@@ -92,7 +92,7 @@ export default function LandingScreen({ onJoined }) {
           ♠ ♦ ♣ ♥
         </div>
         <div style={{ marginTop: 8, fontSize: '0.75rem', color: '#A89B8C' }}>
-          Trick-taking card game · 2–6 players
+          Trick-taking card game · 2–7 players
         </div>
       </div>
 
@@ -213,6 +213,41 @@ export default function LandingScreen({ onJoined }) {
         >
           {loading ? 'Connecting...' : tab === 'create' ? 'Create Room' : 'Join Room'}
         </button>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        marginTop: 28,
+        textAlign: 'center',
+        padding: '14px 20px',
+        background: 'rgba(15,37,68,0.6)',
+        borderRadius: 12,
+        border: '1px solid rgba(212,160,23,0.2)',
+        width: 'min(380px, 100%)',
+      }}>
+        <div style={{ fontSize: '0.65rem', color: '#A89B8C', letterSpacing: '0.1em', fontWeight: 600, marginBottom: 4 }}>
+          DEVELOPED BY
+        </div>
+        <div style={{ fontSize: '1rem', fontWeight: 700, color: '#F5F0E8', marginBottom: 6 }}>
+          Kushal Soni
+        </div>
+        <div style={{ fontSize: '0.75rem', color: '#A89B8C' }}>
+          To know more:{' '}
+          <a
+            href="https://github.com/KUSHAL-31"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: '#D4A017',
+              textDecoration: 'none',
+              fontWeight: 600,
+              borderBottom: '1px solid rgba(212,160,23,0.4)',
+              paddingBottom: 1,
+            }}
+          >
+            github.com/KUSHAL-31
+          </a>
+        </div>
       </div>
     </div>
   );
