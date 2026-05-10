@@ -32,7 +32,7 @@ app.get('/room/:code', (req, res) => {
   const room = getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Room not found' });
   if (room.status === 'playing') return res.status(400).json({ error: 'Game in progress' });
-  if (room.players.length >= 6) return res.status(400).json({ error: 'Room full' });
+  if (room.players.length >= 7) return res.status(400).json({ error: 'Room full' });
   res.json({ roomCode: room.roomCode, playerCount: room.players.length });
 });
 
