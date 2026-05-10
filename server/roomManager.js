@@ -1,5 +1,6 @@
 const rooms = new Map();
 const ROOM_EXPIRY_MS = 2 * 60 * 60 * 1000; // 2 hours
+const MAX_ROOMS = 3;
 
 function generateRoomCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -11,6 +12,10 @@ function generateRoomCode() {
 }
 
 function createRoom(hostId, hostName, customCode) {
+  if (rooms.size >= MAX_ROOMS) {
+    return { error: 'Maximum room creation limit reached. Please try after sometime.' };
+  }
+
   let roomCode = customCode || null;
   if (!roomCode) {
     do {
@@ -140,4 +145,12 @@ function scheduleExpiry(roomCode) {
   }, ROOM_EXPIRY_MS);
 }
 
-module.exports = { createRoom, joinRoom, getRoom, removePlayer, markDisconnected, roomExists };
+function deleteRoom(roomCode) {
+  rooms.delete(roomCode);
+}
+
+function getRoomCount() {
+  return rooms.size;
+}
+
+module.exports = { createRoom, joinRoom, getRoom, removePlayer, markDisconnected, roomExists, deleteRoom, getRoomCount };
