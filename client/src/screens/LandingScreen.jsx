@@ -92,7 +92,7 @@ export default function LandingScreen({ onJoined }) {
           ♠ ♦ ♣ ♥
         </div>
         <div style={{ marginTop: 8, fontSize: '0.75rem', color: '#A89B8C' }}>
-          Trick-taking card game · 2–7 players
+          Sharp minds, risky moves & lucky cards · 2–7 players
         </div>
       </div>
 

@@ -14,14 +14,14 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
   const inviteUrl = `${window.location.origin}/?room=${room?.roomCode}`;
 
   const handleInvite = () => {
+    const message = `🃏 Think you can outsmart everyone at the table? 😏\nA crazy Kachuful showdown is about to begin — where sharp minds, risky moves, and lucky cards decide the winner! 🔥✨\n\n🎮 Join the fun now: *${window.location.origin}*\n🎟️ Room Code: *${room?.roomCode}*\n\nBring your best game face… and maybe a little luck 👀`;
     if (navigator.share) {
       navigator.share({
-        title: 'Join my Kachuful game! 🃏',
-        text: `Hey! Come join me for a game of Kachuful — a mind game with cards. Use room code ${room?.roomCode} or just tap the link to join directly!`,
-        url: inviteUrl,
+        title: 'Join my Kachuful game!',
+        text: message,
       });
     } else {
-      navigator.clipboard.writeText(inviteUrl).then(() => {
+      navigator.clipboard.writeText(message).then(() => {
         setInvited(true);
         setTimeout(() => setInvited(false), 2500);
       });
