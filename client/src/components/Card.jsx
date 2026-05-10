@@ -3,9 +3,10 @@ import { suitColor, suitSymbol } from '../utils/cardUtils';
 
 const CARD_BACK_PATTERN = `
   <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>
-    <rect width='20' height='20' fill='%230F2544'/>
-    <line x1='0' y1='0' x2='20' y2='20' stroke='%23D4A017' stroke-width='0.5' opacity='0.25'/>
-    <line x1='20' y1='0' x2='0' y2='20' stroke='%23D4A017' stroke-width='0.5' opacity='0.25'/>
+    <rect width='20' height='20' fill='%23071426'/>
+    <circle cx='10' cy='10' r='5.5' fill='none' stroke='%23FFE08A' stroke-width='0.5' opacity='0.2'/>
+    <line x1='0' y1='0' x2='20' y2='20' stroke='%23FFE08A' stroke-width='0.5' opacity='0.23'/>
+    <line x1='20' y1='0' x2='0' y2='20' stroke='%23B86F42' stroke-width='0.5' opacity='0.18'/>
   </svg>
 `;
 
@@ -14,10 +15,10 @@ function CardBack({ style, className }) {
     <div
       className={className}
       style={{
-        borderRadius: 8,
-        background: `url("data:image/svg+xml,${CARD_BACK_PATTERN}") repeat`,
-        border: '1.5px solid #D4A017',
-        boxShadow: '2px 4px 12px rgba(0,0,0,0.45)',
+        borderRadius: 9,
+        background: `linear-gradient(145deg, rgba(255,224,138,0.08), transparent), url("data:image/svg+xml,${CARD_BACK_PATTERN}") repeat`,
+        border: '1.5px solid #D6A84F',
+        boxShadow: '0 10px 22px rgba(0,0,0,0.42), inset 0 0 0 2px rgba(255,255,255,0.05)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -26,7 +27,7 @@ function CardBack({ style, className }) {
     >
       <span style={{
         fontFamily: 'Playfair Display, serif',
-        color: '#D4A017',
+        color: '#FFE08A',
         fontSize: '1.2rem',
         fontWeight: 700,
         opacity: 0.7,
@@ -49,12 +50,12 @@ export default function Card({
 }) {
   if (faceDown) {
     const dims = size === 'small'
-      ? { width: 42, height: 59 }
+      ? { width: 48, height: 67 }
       : size === 'trick'
-      ? { width: 70, height: 98 }
+      ? { width: 82, height: 115 }
       : size === 'mobile'
-      ? { width: 72, height: 101 }
-      : { width: 62, height: 87 };
+      ? { width: 78, height: 109 }
+      : { width: 68, height: 95 };
     return <CardBack style={{ ...dims, ...style }} />;
   }
 
@@ -65,35 +66,37 @@ export default function Card({
   const isFaceCard = ['J', 'Q', 'K'].includes(card.rank);
 
   const dims = size === 'small'
-    ? { width: 42, height: 59, cornerFontSize: '0.45rem', centerFontSize: '1rem', rankFontSize: '0.6rem' }
+    ? { width: 48, height: 67, cornerFontSize: '0.52rem', centerFontSize: '1.12rem', rankFontSize: '0.68rem' }
     : size === 'trick'
-    ? { width: 70, height: 98, cornerFontSize: '0.6rem', centerFontSize: '1.6rem', rankFontSize: '0.8rem' }
+    ? { width: 82, height: 115, cornerFontSize: '0.7rem', centerFontSize: '1.9rem', rankFontSize: '0.96rem' }
     : size === 'mobile'
-    ? { width: 72, height: 101, cornerFontSize: '0.6rem', centerFontSize: '1.5rem', rankFontSize: '0.75rem' }
-    : { width: 62, height: 87, cornerFontSize: '0.55rem', centerFontSize: '1.4rem', rankFontSize: '0.7rem' };
+    ? { width: 78, height: 109, cornerFontSize: '0.66rem', centerFontSize: '1.66rem', rankFontSize: '0.84rem' }
+    : { width: 68, height: 95, cornerFontSize: '0.62rem', centerFontSize: '1.54rem', rankFontSize: '0.78rem' };
 
   const isClickable = !!onClick && !disabled;
 
   const trumpGlow = isTrump && !disabled ? {
-    boxShadow: `2px 4px 12px rgba(0,0,0,0.35), 0 0 8px ${color}66`,
+    boxShadow: `0 12px 24px rgba(0,0,0,0.34), 0 0 14px ${color}66`,
   } : {};
 
   const baseStyle = {
     width: dims.width,
     height: dims.height,
-    borderRadius: 8,
-    background: disabled ? '#E8E4DC' : '#FFFDF5',
+    borderRadius: 9,
+    background: disabled
+      ? 'linear-gradient(145deg, #ded8c8, #cfc6b2)'
+      : 'linear-gradient(145deg, #fffdf7 0%, #fff7e6 58%, #f0dfb9 100%)',
     border: selected
-      ? '2px solid #FFD700'
-      : '1px solid #D4C9B0',
+      ? '2px solid #FFE08A'
+      : '1px solid #E4D3AA',
     boxShadow: selected
-      ? '2px 4px 12px rgba(0,0,0,0.35), 0 0 0 2px #FFD700'
-      : '2px 4px 12px rgba(0,0,0,0.35)',
+      ? '0 16px 30px rgba(0,0,0,0.38), 0 0 0 2px rgba(255,224,138,0.85), 0 0 24px rgba(255,224,138,0.48)'
+      : '0 10px 22px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.8)',
     ...trumpGlow,
     position: 'relative',
     cursor: isClickable ? 'pointer' : 'default',
     opacity: disabled ? 0.5 : 1,
-    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+    transition: 'transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease',
     userSelect: 'none',
     flexShrink: 0,
     transform: selected ? 'translateY(-12px)' : 'translateY(0)',
@@ -108,21 +111,23 @@ export default function Card({
         onMouseEnter={e => {
           if (isClickable && !selected) {
             e.currentTarget.style.transform = 'translateY(-8px)';
-            e.currentTarget.style.boxShadow = '2px 8px 18px rgba(0,0,0,0.5)';
+            e.currentTarget.style.boxShadow = '0 18px 28px rgba(0,0,0,0.46), 0 0 18px rgba(255,224,138,0.22)';
+            e.currentTarget.style.filter = 'brightness(1.04)';
           }
         }}
         onMouseLeave={e => {
           if (isClickable && !selected) {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '2px 4px 12px rgba(0,0,0,0.35)';
+            e.currentTarget.style.boxShadow = '0 10px 22px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.8)';
+            e.currentTarget.style.filter = 'brightness(1)';
           }
         }}
       >
         {/* Top-left corner */}
         <div style={{
           position: 'absolute',
-          top: 3,
-          left: 4,
+          top: 4,
+          left: 5,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -159,8 +164,8 @@ export default function Card({
         {/* Bottom-right corner (rotated) */}
         <div style={{
           position: 'absolute',
-          bottom: 3,
-          right: 4,
+          bottom: 4,
+          right: 5,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -178,8 +183,8 @@ export default function Card({
       {playerName && (
         <span style={{
           marginTop: 4,
-          fontSize: '0.6rem',
-          color: '#A89B8C',
+          fontSize: '0.7rem',
+          color: '#D8C7A7',
           textAlign: 'center',
           maxWidth: dims.width,
           overflow: 'hidden',

@@ -8,12 +8,14 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
       right: 0,
       bottom: 0,
       width: 'min(280px, 90vw)',
-      background: '#0F2544',
-      borderLeft: '1px solid rgba(212,160,23,0.3)',
+      background: 'linear-gradient(180deg, rgba(16,39,67,0.98), rgba(6,16,30,0.98))',
+      borderLeft: '1px solid rgba(255,224,138,0.28)',
       display: 'flex',
       flexDirection: 'column',
       zIndex: 150,
       animation: 'slide-up 0.3s ease',
+      boxShadow: '-18px 0 48px rgba(0,0,0,0.42)',
+      backdropFilter: 'blur(14px)',
     }}>
       <div style={{
         display: 'flex',
@@ -22,12 +24,12 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
         padding: '14px 16px',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
-        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#F5F0E8' }}>
+        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.18rem', color: '#FFF6E6' }}>
           Scores
         </span>
         <button
           onClick={onClose}
-          style={{ background: 'none', color: '#A89B8C', fontSize: '1.2rem', cursor: 'pointer' }}
+          style={{ background: 'none', color: '#C8BA9D', fontSize: '1.2rem', cursor: 'pointer' }}
         >
           ✕
         </button>
@@ -55,13 +57,13 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
                   width: 22,
                   height: 22,
                   borderRadius: '50%',
-                  background: rank === 0 ? '#D4A017' : 'rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.08)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.65rem',
+                  fontSize: '0.78rem',
                   fontWeight: 700,
-                  color: rank === 0 ? '#0F2544' : '#A89B8C',
+                  color: '#C8BA9D',
                   flexShrink: 0,
                 }}>
                   {rank + 1}
@@ -69,9 +71,9 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.9rem',
                     fontWeight: 600,
-                    color: '#F5F0E8',
+                    color: '#FFF6E6',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -79,7 +81,7 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
                     {player.name}
                   </div>
                   {hasBid && (
-                    <div style={{ fontSize: '0.6rem', color: '#A89B8C' }}>
+                    <div style={{ fontSize: '0.74rem', color: '#C8BA9D' }}>
                       Bid {bid} · Won {won}
                     </div>
                   )}
@@ -88,7 +90,7 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
                 <div style={{
                   fontSize: '0.9rem',
                   fontWeight: 700,
-                  color: '#D4A017',
+                  color: '#FFE08A',
                   flexShrink: 0,
                 }}>
                   {score}

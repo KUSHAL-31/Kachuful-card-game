@@ -6,16 +6,17 @@ export default function TrickArea({ currentTrick, players, trumpSuit, winnerId }
     return (
       <div style={{
         width: '100%',
-        minHeight: 130,
+        minHeight: 160,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#A89B8C',
-        fontSize: '0.75rem',
+        color: '#D8C7A7',
+        fontSize: '0.9rem',
         fontStyle: 'italic',
-        background: 'rgba(0,0,0,0.15)',
+        background: 'radial-gradient(ellipse at center, rgba(255,224,138,0.08), rgba(0,0,0,0.18))',
         borderRadius: 12,
-        border: '1px dashed rgba(212,160,23,0.3)',
+        border: '1px dashed rgba(255,224,138,0.34)',
+        boxShadow: 'inset 0 1px 22px rgba(0,0,0,0.24)',
       }}>
         Waiting for first card...
       </div>
@@ -25,16 +26,17 @@ export default function TrickArea({ currentTrick, players, trumpSuit, winnerId }
   return (
     <div style={{
       width: '100%',
-      minHeight: 130,
-      background: 'rgba(0,0,0,0.2)',
+      minHeight: 160,
+      background: 'radial-gradient(ellipse at center, rgba(255,224,138,0.08), rgba(0,0,0,0.22))',
       borderRadius: 12,
-      border: '1px solid rgba(212,160,23,0.2)',
+      border: '1px solid rgba(255,224,138,0.24)',
+      boxShadow: 'inset 0 1px 24px rgba(0,0,0,0.26), 0 10px 24px rgba(0,0,0,0.18)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       flexWrap: 'wrap',
-      gap: 12,
-      padding: '12px 16px',
+      gap: 16,
+      padding: '16px 18px',
     }}>
       {currentTrick.map(({ playerId, card, seatIndex }) => {
         const player = players.find(p => p.id === playerId);
@@ -49,7 +51,7 @@ export default function TrickArea({ currentTrick, players, trumpSuit, winnerId }
             animation: 'fade-in 0.3s ease',
           }}>
             <div style={{
-              outline: isWinner ? '2px solid #FFD700' : 'none',
+              outline: isWinner ? '2px solid #FFE08A' : 'none',
               outlineOffset: 3,
               borderRadius: 10,
               animation: isWinner ? 'glow-gold 0.8s ease infinite' : 'none',
