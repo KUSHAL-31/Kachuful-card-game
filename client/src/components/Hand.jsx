@@ -24,8 +24,8 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
   };
 
   const isMobile = window.innerWidth < 768;
-  const cardWidth = isMobile ? 72 : 75;
-  const overlapOffset = isMobile ? 42 : 32;
+  const cardWidth = isMobile ? 78 : 80;
+  const overlapOffset = isMobile ? 45 : 36;
   const totalWidth = sorted.length > 1
     ? (sorted.length - 1) * overlapOffset + cardWidth
     : cardWidth;
@@ -34,9 +34,9 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
       {isMyTurn && phase === 'playing' && (
         <div style={{
-          color: '#FFD700',
-          fontSize: '0.75rem',
-          fontWeight: 600,
+          color: '#FFE08A',
+          fontSize: '0.88rem',
+          fontWeight: 800,
           letterSpacing: '0.05em',
           animation: 'pulse 1.5s ease infinite',
         }}>
@@ -47,7 +47,7 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
       <div style={{
         position: 'relative',
         width: Math.min(totalWidth, window.innerWidth - 32),
-        height: isMobile ? 135 : 130,
+        height: isMobile ? 146 : 142,
         paddingTop: 16,
         overflowX: totalWidth > window.innerWidth - 32 ? 'auto' : 'visible',
         overflowY: 'visible',
@@ -84,18 +84,19 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
       <div style={{
         display: 'flex',
         gap: 8,
-        fontSize: '0.65rem',
-        color: '#A89B8C',
+        fontSize: '0.78rem',
+        color: '#C8BA9D',
       }}>
         {selectedCard && isMyTurn && (
           <button
             onClick={() => setSelectedCard(null)}
             style={{
               background: 'rgba(255,255,255,0.1)',
-              color: '#F5F0E8',
+              color: '#FFF6E6',
+              border: '1px solid rgba(255,255,255,0.12)',
               padding: '3px 10px',
               borderRadius: 4,
-              fontSize: '0.65rem',
+              fontSize: '0.78rem',
               cursor: 'pointer',
             }}
           >

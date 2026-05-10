@@ -20,13 +20,16 @@ export default function PlayerSeat({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 4,
-    padding: '8px 10px',
-    borderRadius: 12,
-    background: isActive ? 'rgba(255,215,0,0.12)' : 'rgba(15,37,68,0.6)',
-    border: isActive ? '1.5px solid #FFD700' : '1px solid rgba(255,255,255,0.08)',
-    minWidth: 80,
-    maxWidth: 110,
+    gap: 6,
+    padding: '11px 14px',
+    borderRadius: 14,
+    background: isActive
+      ? 'linear-gradient(145deg, rgba(255,224,138,0.18), rgba(7,20,38,0.78))'
+      : 'linear-gradient(145deg, rgba(16,39,67,0.72), rgba(7,20,38,0.58))',
+    border: isActive ? '1.5px solid #FFE08A' : '1px solid rgba(255,255,255,0.10)',
+    boxShadow: isActive ? '0 12px 26px rgba(0,0,0,0.3)' : '0 8px 18px rgba(0,0,0,0.18)',
+    minWidth: 108,
+    maxWidth: 150,
     transition: 'all 0.3s ease',
     animation: isActive ? 'glow-gold 1.5s ease infinite' : 'none',
     position: 'relative',
@@ -37,15 +40,15 @@ export default function PlayerSeat({
       {isCompulsory && (
         <div style={{
           position: 'absolute',
-          top: -10,
+          top: -12,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: '#D4A017',
-          color: '#0F2544',
-          fontSize: '0.45rem',
+          background: 'linear-gradient(180deg, #FFE08A, #D6A84F)',
+          color: '#091626',
+          fontSize: '0.55rem',
           fontWeight: 700,
-          padding: '1px 5px',
-          borderRadius: 4,
+          padding: '2px 7px',
+          borderRadius: 5,
           whiteSpace: 'nowrap',
           letterSpacing: '0.05em',
         }}>
@@ -55,28 +58,28 @@ export default function PlayerSeat({
 
       {/* Player name */}
       <div style={{
-        fontSize: '0.7rem',
-        fontWeight: 600,
-        color: isActive ? '#FFD700' : '#F5F0E8',
+        fontSize: '0.86rem',
+        fontWeight: 800,
+        color: isActive ? '#FFE08A' : '#FFF6E6',
         textAlign: 'center',
-        maxWidth: 90,
+        maxWidth: 124,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
       }}>
         {player.name}
         {isMe && (
-          <span style={{ fontSize: '0.5rem', color: '#A89B8C', marginLeft: 3 }}>(you)</span>
+          <span style={{ fontSize: '0.62rem', color: '#C8BA9D', marginLeft: 4 }}>(you)</span>
         )}
       </div>
 
       {/* Thinking indicator */}
       {isActive && (
         <div style={{
-          fontSize: '0.55rem',
-          color: '#FFD700',
+          fontSize: '0.66rem',
+          color: '#FFE08A',
           animation: 'pulse 1s ease infinite',
-          fontWeight: 600,
+          fontWeight: 800,
         }}>
           {phase === 'bidding' ? 'BIDDING...' : 'THINKING...'}
         </div>
@@ -86,16 +89,16 @@ export default function PlayerSeat({
       {phase !== 'bidding' || hasBid ? (
         <div style={{
           display: 'flex',
-          gap: 8,
-          fontSize: '0.6rem',
-          color: '#A89B8C',
+          gap: 10,
+          fontSize: '0.72rem',
+          color: '#C8BA9D',
         }}>
           {hasBid && (
-            <span>Bid: <strong style={{ color: '#F5F0E8' }}>{bid}</strong></span>
+            <span>Bid: <strong style={{ color: '#FFF6E6' }}>{bid}</strong></span>
           )}
           {phase === 'playing' && tricksWon !== undefined && (
             <span>Won: <strong style={{
-              color: tricksWon === bid ? '#22C55E' : '#F5F0E8',
+              color: tricksWon === bid ? '#6EE7B7' : '#FFF6E6',
             }}>{tricksWon}</strong></span>
           )}
         </div>

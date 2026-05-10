@@ -3,31 +3,31 @@ import { suitSymbol, TRUMP_HINDI } from '../utils/cardUtils';
 
 const SUIT_THEMES = {
   spades: {
-    bg: 'linear-gradient(135deg, #1a1a2e 0%, #2d2d4a 100%)',
-    border: '#6c7ae0',
-    symbol: '#e8e8ff',
-    label: '#a0a8f0',
+    bg: 'linear-gradient(135deg, #111827 0%, #29324d 100%)',
+    border: '#93a4ff',
+    symbol: '#f4f6ff',
+    label: '#b8c2ff',
     glow: 'rgba(108,122,224,0.5)',
   },
   clubs: {
-    bg: 'linear-gradient(135deg, #0d3321 0%, #1a5c3a 100%)',
-    border: '#4caf7d',
-    symbol: '#9effd0',
-    label: '#6fcfa0',
+    bg: 'linear-gradient(135deg, #06301f 0%, #15734d 100%)',
+    border: '#6ee7b7',
+    symbol: '#c8ffe8',
+    label: '#93f2c8',
     glow: 'rgba(76,175,125,0.5)',
   },
   hearts: {
-    bg: 'linear-gradient(135deg, #4a0a14 0%, #8b1a2e 100%)',
-    border: '#f06080',
-    symbol: '#ff9ab0',
-    label: '#f06080',
+    bg: 'linear-gradient(135deg, #4c0715 0%, #a31d3a 100%)',
+    border: '#ff8ca4',
+    symbol: '#ffd3dc',
+    label: '#ff9ab0',
     glow: 'rgba(240,96,128,0.5)',
   },
   diamonds: {
-    bg: 'linear-gradient(135deg, #4a1a00 0%, #8b3a00 100%)',
-    border: '#f07030',
-    symbol: '#ffb080',
-    label: '#f07030',
+    bg: 'linear-gradient(135deg, #4a1700 0%, #a85318 100%)',
+    border: '#ffb36f',
+    symbol: '#ffe2c4',
+    label: '#ffc18b',
     glow: 'rgba(240,112,48,0.5)',
   },
 };
@@ -45,18 +45,18 @@ export default function TrumpIndicator({ trumpSuit, currentRound, totalRounds, c
       flexDirection: 'column',
       alignItems: 'center',
       gap: 2,
-      padding: '8px 12px',
+      padding: '10px 14px',
       background: theme.bg,
-      borderRadius: 10,
+      borderRadius: 12,
       border: `1.5px solid ${theme.border}`,
-      boxShadow: `0 0 12px ${theme.glow}, inset 0 1px 0 rgba(255,255,255,0.08)`,
-      minWidth: 72,
+      boxShadow: `0 12px 26px rgba(0,0,0,0.28), 0 0 18px ${theme.glow}, inset 0 1px 0 rgba(255,255,255,0.16)`,
+      minWidth: 86,
     }}>
-      <div style={{ fontSize: '0.5rem', color: theme.label, textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>
+      <div style={{ fontSize: '0.6rem', color: theme.label, textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800 }}>
         TRUMP
       </div>
       <div style={{
-        fontSize: '2.2rem',
+        fontSize: '2.6rem',
         color: theme.symbol,
         lineHeight: 1,
         textShadow: `0 0 10px ${theme.glow}`,
@@ -64,14 +64,14 @@ export default function TrumpIndicator({ trumpSuit, currentRound, totalRounds, c
       }}>
         {symbol}
       </div>
-      <div style={{ fontSize: '0.55rem', color: theme.label, fontWeight: 600, textAlign: 'center' }}>
+      <div style={{ fontSize: '0.66rem', color: theme.label, fontWeight: 800, textAlign: 'center' }}>
         {hindi}
       </div>
       <div style={{ width: '100%', height: 1, background: `${theme.border}44`, margin: '2px 0' }} />
-      <div style={{ fontSize: '0.6rem', color: '#F5F0E8', fontWeight: 600 }}>
+      <div style={{ fontSize: '0.72rem', color: '#FFF6E6', fontWeight: 800 }}>
         Round {currentRound}/{totalRounds}
       </div>
-      <div style={{ fontSize: '0.5rem', color: '#A89B8C' }}>
+      <div style={{ fontSize: '0.62rem', color: '#D8C7A7' }}>
         {cardsThisRound} card{cardsThisRound !== 1 ? 's' : ''}
       </div>
     </div>

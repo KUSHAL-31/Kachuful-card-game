@@ -8,7 +8,8 @@ export default function RoundSummaryModal({ roundResult, players, scores, onNext
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'rgba(0,0,0,0.7)',
+      background: 'rgba(0,0,0,0.72)',
+      backdropFilter: 'blur(6px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -16,34 +17,35 @@ export default function RoundSummaryModal({ roundResult, players, scores, onNext
       padding: 16,
     }}>
       <div style={{
-        background: '#0F2544',
-        border: '1px solid #D4A017',
+        background: 'linear-gradient(145deg, rgba(16,39,67,0.98), rgba(6,16,30,0.98))',
+        border: '1px solid #D6A84F',
         borderRadius: 16,
         padding: '24px 20px',
         width: 'min(380px, 100%)',
         animation: 'fade-in 0.3s ease',
+        boxShadow: '0 24px 70px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255,255,255,0.08)',
       }}>
         <div style={{
           fontFamily: 'Playfair Display, serif',
-          fontSize: '1.2rem',
+          fontSize: '1.36rem',
           textAlign: 'center',
-          color: '#D4A017',
+          color: '#FFE08A',
           marginBottom: 4,
         }}>
           Round {roundResult.roundNumber} Complete
         </div>
         <div style={{
           textAlign: 'center',
-          fontSize: '0.7rem',
-          color: '#A89B8C',
+          fontSize: '0.84rem',
+          color: '#C8BA9D',
           marginBottom: 16,
         }}>
           Trump: {suitSymbol(roundResult.trumpSuit)} · {roundResult.cardsDealt} cards
         </div>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.86rem' }}>
           <thead>
-            <tr style={{ color: '#A89B8C', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <tr style={{ color: '#C8BA9D', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <th style={{ textAlign: 'left', padding: '4px 8px', fontWeight: 600 }}>Player</th>
               <th style={{ textAlign: 'center', padding: '4px 8px', fontWeight: 600 }}>Bid</th>
               <th style={{ textAlign: 'center', padding: '4px 8px', fontWeight: 600 }}>Won</th>
@@ -61,11 +63,11 @@ export default function RoundSummaryModal({ roundResult, players, scores, onNext
 
               return (
                 <tr key={player.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                  <td style={{ padding: '6px 8px', color: '#F5F0E8', fontWeight: 500 }}>
+                  <td style={{ padding: '6px 8px', color: '#FFF6E6', fontWeight: 600 }}>
                     {player.name}
                   </td>
-                  <td style={{ textAlign: 'center', padding: '6px 8px', color: '#A89B8C' }}>{bid}</td>
-                  <td style={{ textAlign: 'center', padding: '6px 8px', color: '#A89B8C' }}>{won}</td>
+                  <td style={{ textAlign: 'center', padding: '6px 8px', color: '#C8BA9D' }}>{bid}</td>
+                  <td style={{ textAlign: 'center', padding: '6px 8px', color: '#C8BA9D' }}>{won}</td>
                   <td style={{
                     textAlign: 'center',
                     padding: '6px 8px',
@@ -77,7 +79,7 @@ export default function RoundSummaryModal({ roundResult, players, scores, onNext
                   <td style={{
                     textAlign: 'right',
                     padding: '6px 8px',
-                    color: '#D4A017',
+                    color: '#FFE08A',
                     fontWeight: 700,
                   }}>
                     {total}
@@ -93,14 +95,14 @@ export default function RoundSummaryModal({ roundResult, players, scores, onNext
             <button
               onClick={onNext}
               style={{
-                background: '#D4A017',
-                color: '#0F2544',
+                background: 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)',
+                color: '#091626',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 padding: '10px 28px',
                 borderRadius: 8,
                 cursor: 'pointer',
-                border: 'none',
+                border: '1px solid rgba(255,224,138,0.68)',
               }}
             >
               Next Round →
@@ -112,8 +114,8 @@ export default function RoundSummaryModal({ roundResult, players, scores, onNext
           <div style={{
             textAlign: 'center',
             marginTop: 16,
-            fontSize: '0.65rem',
-            color: '#A89B8C',
+            fontSize: '0.78rem',
+            color: '#C8BA9D',
             animation: 'pulse 1s ease infinite',
           }}>
             Next round starting soon...

@@ -52,30 +52,31 @@ export default function LandingScreen({ onJoined }) {
   };
 
   return (
-    <div style={{
+    <div className="premium-table" style={{
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       padding: 24,
-      background: 'radial-gradient(ellipse at center, #2D6A4F 0%, #1B4332 60%, #0a2618 100%)',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
       {/* Logo */}
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
+      <div style={{ textAlign: 'center', marginBottom: 34 }}>
         <div style={{
           fontFamily: 'Playfair Display, serif',
-          fontSize: 'clamp(2.5rem, 8vw, 4rem)',
-          color: '#D4A017',
+          fontSize: 'clamp(3rem, 8.5vw, 4.7rem)',
+          color: '#FFE08A',
           lineHeight: 1,
-          textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+          textShadow: '0 4px 18px rgba(0,0,0,0.55), 0 0 22px rgba(214,168,79,0.32)',
         }}>
           Kachuful
         </div>
         <div style={{
           fontFamily: 'Playfair Display, serif',
           fontSize: 'clamp(1rem, 4vw, 1.4rem)',
-          color: '#A89B8C',
+          color: '#D8C7A7',
           marginTop: 6,
         }}>
           काचूफूल
@@ -86,28 +87,25 @@ export default function LandingScreen({ onJoined }) {
           gap: 8,
           justifyContent: 'center',
           fontSize: '1.5rem',
-          color: '#D4A017',
-          opacity: 0.7,
+          color: '#FFE08A',
+          opacity: 0.82,
         }}>
           ♠ ♦ ♣ ♥
         </div>
-        <div style={{ marginTop: 8, fontSize: '0.75rem', color: '#A89B8C' }}>
+        <div style={{ marginTop: 10, fontSize: '0.9rem', color: '#D8C7A7', fontWeight: 700 }}>
           Sharp minds, risky moves & lucky cards · 2–7 players
         </div>
       </div>
 
       {/* Card */}
-      <div style={{
-        width: 'min(380px, 100%)',
-        background: 'rgba(15,37,68,0.85)',
+      <div className="glass-panel" style={{
+        width: 'min(440px, 100%)',
         borderRadius: 16,
-        border: '1px solid rgba(212,160,23,0.3)',
-        padding: '28px 24px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        padding: '30px 26px',
       }}>
         {/* Name input */}
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', color: '#A89B8C', marginBottom: 6, fontWeight: 600 }}>
+          <label style={{ display: 'block', fontSize: '0.82rem', color: '#C8BA9D', marginBottom: 7, fontWeight: 800, letterSpacing: '0.08em' }}>
             YOUR NAME
           </label>
           <input
@@ -119,12 +117,13 @@ export default function LandingScreen({ onJoined }) {
             onKeyDown={e => e.key === 'Enter' && (tab === 'create' ? handleCreate() : handleJoin())}
             style={{
               width: '100%',
-              padding: '11px 14px',
+              padding: '13px 15px',
               borderRadius: 8,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              color: '#F5F0E8',
-              fontSize: '1rem',
+              background: 'rgba(255,255,255,0.075)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              color: '#FFF6E6',
+              fontSize: '1.06rem',
+              boxShadow: 'inset 0 1px 8px rgba(0,0,0,0.18)',
             }}
           />
         </div>
@@ -137,15 +136,16 @@ export default function LandingScreen({ onJoined }) {
               onClick={() => { setTab(t); setError(''); }}
               style={{
                 flex: 1,
-                padding: '8px 0',
+                padding: '10px 0',
                 borderRadius: 8,
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                background: tab === t ? '#D4A017' : 'rgba(255,255,255,0.06)',
-                color: tab === t ? '#0F2544' : '#A89B8C',
-                border: 'none',
+                fontSize: '0.92rem',
+                fontWeight: 800,
+                background: tab === t ? 'linear-gradient(180deg, #FFE08A, #D6A84F 62%, #AD7B2F)' : 'rgba(255,255,255,0.07)',
+                color: tab === t ? '#091626' : '#C8BA9D',
+                border: tab === t ? '1px solid rgba(255,224,138,0.75)' : '1px solid rgba(255,255,255,0.10)',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
+                boxShadow: tab === t ? '0 8px 18px rgba(214,168,79,0.22), inset 0 1px 0 rgba(255,255,255,0.55)' : 'none',
               }}
             >
               {t === 'create' ? 'Create Room' : 'Join Room'}
@@ -155,7 +155,7 @@ export default function LandingScreen({ onJoined }) {
 
         {tab === 'join' && (
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', color: '#A89B8C', marginBottom: 6, fontWeight: 600 }}>
+            <label style={{ display: 'block', fontSize: '0.82rem', color: '#C8BA9D', marginBottom: 7, fontWeight: 800, letterSpacing: '0.08em' }}>
               ROOM CODE
             </label>
             <input
@@ -167,12 +167,12 @@ export default function LandingScreen({ onJoined }) {
               onKeyDown={e => e.key === 'Enter' && handleJoin()}
               style={{
                 width: '100%',
-                padding: '11px 14px',
+                padding: '13px 15px',
                 borderRadius: 8,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#F5F0E8',
-                fontSize: '1rem',
+                background: 'rgba(255,255,255,0.075)',
+                border: '1px solid rgba(255,255,255,0.18)',
+                color: '#FFF6E6',
+                fontSize: '1.06rem',
                 letterSpacing: '0.2em',
                 fontWeight: 700,
                 textAlign: 'center',
@@ -189,7 +189,7 @@ export default function LandingScreen({ onJoined }) {
             background: 'rgba(239,68,68,0.15)',
             border: '1px solid rgba(239,68,68,0.3)',
             color: '#EF4444',
-            fontSize: '0.75rem',
+            fontSize: '0.86rem',
           }}>
             {error}
           </div>
@@ -200,15 +200,16 @@ export default function LandingScreen({ onJoined }) {
           disabled={loading}
           style={{
             width: '100%',
-            padding: '13px',
+            padding: '15px',
             borderRadius: 8,
-            background: loading ? 'rgba(212,160,23,0.4)' : '#D4A017',
-            color: '#0F2544',
+            background: loading ? 'rgba(214,168,79,0.35)' : 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)',
+            color: '#091626',
             fontWeight: 700,
-            fontSize: '1rem',
+            fontSize: '1.08rem',
             cursor: loading ? 'not-allowed' : 'pointer',
-            border: 'none',
+            border: '1px solid rgba(255,224,138,0.68)',
             transition: 'all 0.2s',
+            boxShadow: loading ? 'none' : '0 10px 24px rgba(214,168,79,0.25), inset 0 1px 0 rgba(255,255,255,0.6)',
           }}
         >
           {loading ? 'Connecting...' : tab === 'create' ? 'Create Room' : 'Join Room'}
@@ -220,28 +221,29 @@ export default function LandingScreen({ onJoined }) {
         marginTop: 28,
         textAlign: 'center',
         padding: '14px 20px',
-        background: 'rgba(15,37,68,0.6)',
+        background: 'rgba(7,20,38,0.66)',
         borderRadius: 12,
-        border: '1px solid rgba(212,160,23,0.2)',
-        width: 'min(380px, 100%)',
+        border: '1px solid rgba(255,224,138,0.22)',
+        boxShadow: '0 12px 28px rgba(0,0,0,0.24)',
+        width: 'min(440px, 100%)',
       }}>
-        <div style={{ fontSize: '0.65rem', color: '#A89B8C', letterSpacing: '0.1em', fontWeight: 600, marginBottom: 4 }}>
+        <div style={{ fontSize: '0.65rem', color: '#C8BA9D', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 4 }}>
           DEVELOPED BY
         </div>
-        <div style={{ fontSize: '1rem', fontWeight: 700, color: '#F5F0E8', marginBottom: 6 }}>
+        <div style={{ fontSize: '1rem', fontWeight: 700, color: '#FFF6E6', marginBottom: 6 }}>
           Kushal Soni
         </div>
-        <div style={{ fontSize: '0.75rem', color: '#A89B8C' }}>
+        <div style={{ fontSize: '0.82rem', color: '#C8BA9D' }}>
           To know more:{' '}
           <a
             href="https://github.com/KUSHAL-31"
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              color: '#D4A017',
+              color: '#FFE08A',
               textDecoration: 'none',
               fontWeight: 600,
-              borderBottom: '1px solid rgba(212,160,23,0.4)',
+              borderBottom: '1px solid rgba(255,224,138,0.45)',
               paddingBottom: 1,
             }}
           >

@@ -16,7 +16,7 @@ function Confetti() {
       y: -20,
       r: Math.random() * 6 + 3,
       d: Math.random() * 100 + 10,
-      color: ['#D4A017', '#22C55E', '#CC2200', '#F5F0E8', '#FFD700'][Math.floor(Math.random() * 5)],
+      color: ['#D6A84F', '#6EE7B7', '#C51F38', '#FFF6E6', '#FFE08A'][Math.floor(Math.random() * 5)],
       tilt: Math.random() * 10 - 5,
       tiltAngle: 0,
       tiltAngleInc: Math.random() * 0.1 + 0.05,
@@ -69,14 +69,13 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
   };
 
   return (
-    <div style={{
+    <div className="premium-table" style={{
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
       padding: '24px 16px',
-      background: 'radial-gradient(ellipse at center, #2D6A4F 0%, #1B4332 60%, #0a2618 100%)',
       overflowY: 'auto',
       position: 'relative',
     }}>
@@ -89,12 +88,13 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
           <div style={{
             fontFamily: 'Playfair Display, serif',
             fontSize: '2rem',
-            color: '#D4A017',
+            color: '#FFE08A',
+            textShadow: '0 4px 18px rgba(0,0,0,0.55), 0 0 18px rgba(214,168,79,0.28)',
           }}>
             Game Over!
           </div>
           {winners.length > 0 && (
-            <div style={{ marginTop: 8, fontSize: '0.85rem', color: '#A89B8C' }}>
+            <div style={{ marginTop: 8, fontSize: '0.85rem', color: '#D8C7A7' }}>
               {winners.length === 1
                 ? `${players.find(p => p.id === winners[0])?.name} wins!`
                 : `${winners.map(id => players.find(p => p.id === id)?.name).join(' & ')} share the win!`}
@@ -104,18 +104,20 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
 
         {/* Leaderboard */}
         <div style={{
-          background: 'rgba(15,37,68,0.85)',
+          background: 'linear-gradient(145deg, rgba(16,39,67,0.92), rgba(6,16,30,0.84))',
           borderRadius: 16,
-          border: '1px solid rgba(212,160,23,0.3)',
+          border: '1px solid rgba(255,224,138,0.28)',
           overflow: 'hidden',
           marginBottom: 16,
+          boxShadow: '0 24px 70px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(14px)',
         }}>
           <div style={{
             padding: '12px 16px',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
             fontFamily: 'Playfair Display, serif',
             fontSize: '0.9rem',
-            color: '#D4A017',
+            color: '#FFE08A',
           }}>
             Final Leaderboard
           </div>
@@ -128,18 +130,18 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
                 alignItems: 'center',
                 padding: '12px 16px',
                 borderBottom: i < sorted.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                background: isWinner ? 'rgba(212,160,23,0.08)' : 'transparent',
+                background: isWinner ? 'rgba(255,224,138,0.10)' : 'transparent',
               }}>
                 <div style={{
                   width: 32,
                   height: 32,
                   borderRadius: '50%',
-                  background: isWinner ? '#D4A017' : 'rgba(255,255,255,0.06)',
+                  background: isWinner ? 'linear-gradient(180deg, #FFE08A, #D6A84F)' : 'rgba(255,255,255,0.06)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: isWinner ? '1rem' : '0.75rem',
-                  color: isWinner ? '#0F2544' : '#A89B8C',
+                  color: isWinner ? '#091626' : '#C8BA9D',
                   fontWeight: 700,
                   flexShrink: 0,
                   marginRight: 12,
@@ -150,7 +152,7 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
                   <div style={{
                     fontWeight: 600,
                     fontSize: '0.9rem',
-                    color: isWinner ? '#D4A017' : '#F5F0E8',
+                    color: isWinner ? '#FFE08A' : '#FFF6E6',
                   }}>
                     {player.name}
                   </div>
@@ -158,7 +160,7 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
                 <div style={{
                   fontSize: '1.3rem',
                   fontWeight: 700,
-                  color: isWinner ? '#D4A017' : '#F5F0E8',
+                  color: isWinner ? '#FFE08A' : '#FFF6E6',
                 }}>
                   {scores[player.id] || 0}
                 </div>
@@ -174,9 +176,9 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
             width: '100%',
             padding: '10px',
             borderRadius: 8,
-            background: 'rgba(255,255,255,0.06)',
+            background: 'rgba(255,255,255,0.075)',
             border: '1px solid rgba(255,255,255,0.1)',
-            color: '#A89B8C',
+            color: '#C8BA9D',
             fontSize: '0.8rem',
             cursor: 'pointer',
             marginBottom: 12,
@@ -187,20 +189,20 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
 
         {showHistory && roundHistory && roundHistory.length > 0 && (
           <div style={{
-            background: 'rgba(15,37,68,0.85)',
+            background: 'rgba(7,20,38,0.82)',
             borderRadius: 12,
             border: '1px solid rgba(255,255,255,0.06)',
             marginBottom: 16,
             overflow: 'hidden',
           }}>
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.65rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
                 <thead>
                   <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
-                    <th style={{ padding: '8px', color: '#A89B8C', textAlign: 'left', whiteSpace: 'nowrap' }}>Rnd</th>
-                    <th style={{ padding: '8px', color: '#A89B8C', textAlign: 'center' }}>Trump</th>
+                    <th style={{ padding: '8px', color: '#C8BA9D', textAlign: 'left', whiteSpace: 'nowrap' }}>Rnd</th>
+                    <th style={{ padding: '8px', color: '#C8BA9D', textAlign: 'center' }}>Trump</th>
                     {players.map(p => (
-                      <th key={p.id} style={{ padding: '8px', color: '#A89B8C', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <th key={p.id} style={{ padding: '8px', color: '#C8BA9D', textAlign: 'center', whiteSpace: 'nowrap' }}>
                         {p.name}
                       </th>
                     ))}
@@ -209,8 +211,8 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
                 <tbody>
                   {roundHistory.map(rnd => (
                     <tr key={rnd.roundNumber} style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                      <td style={{ padding: '6px 8px', color: '#A89B8C' }}>{rnd.roundNumber}</td>
-                      <td style={{ padding: '6px 8px', textAlign: 'center', color: ['hearts','diamonds'].includes(rnd.trumpSuit) ? '#CC2200' : '#F5F0E8' }}>
+                      <td style={{ padding: '6px 8px', color: '#C8BA9D' }}>{rnd.roundNumber}</td>
+                      <td style={{ padding: '6px 8px', textAlign: 'center', color: ['hearts','diamonds'].includes(rnd.trumpSuit) ? '#C51F38' : '#FFF6E6' }}>
                         {suitSymbol(rnd.trumpSuit)}
                       </td>
                       {players.map(p => {
@@ -224,7 +226,7 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
                               {pts > 0 ? `+${pts}` : '0'}
                             </span>
                             <br />
-                            <span style={{ color: '#A89B8C', fontSize: '0.55rem' }}>{bid}/{won}</span>
+                            <span style={{ color: '#C8BA9D', fontSize: '0.55rem' }}>{bid}/{won}</span>
                           </td>
                         );
                       })}
@@ -245,12 +247,13 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
                 width: '100%',
                 padding: '13px',
                 borderRadius: 8,
-                background: '#D4A017',
-                color: '#0F2544',
+                background: 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)',
+                color: '#091626',
                 fontWeight: 700,
                 fontSize: '1rem',
                 cursor: 'pointer',
-                border: 'none',
+                border: '1px solid rgba(255,224,138,0.68)',
+                boxShadow: '0 10px 24px rgba(214,168,79,0.25), inset 0 1px 0 rgba(255,255,255,0.6)',
               }}
             >
               Play Again
@@ -263,7 +266,7 @@ export default function ResultScreen({ scores, roundHistory, winners, players, i
               padding: '10px',
               borderRadius: 8,
               background: 'transparent',
-              color: '#A89B8C',
+              color: '#C8BA9D',
               fontWeight: 600,
               fontSize: '0.85rem',
               cursor: 'pointer',

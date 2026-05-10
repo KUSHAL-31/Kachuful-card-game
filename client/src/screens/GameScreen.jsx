@@ -78,13 +78,13 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
   }, []);
 
   const isMobile = window.innerWidth < 768;
+  const isMobileBidding = isMobile && phase === 'bidding';
 
   return (
-    <div style={{
+    <div className="premium-table" style={{
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      background: 'radial-gradient(ellipse at center, #2D6A4F 0%, #1B4332 60%, #0a2618 100%)',
       overflow: 'hidden',
       position: 'relative',
     }}>
@@ -93,24 +93,29 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '8px 12px',
-        background: 'rgba(0,0,0,0.3)',
-        borderBottom: '1px solid rgba(212,160,23,0.15)',
+        padding: '10px 14px',
+        background: 'linear-gradient(180deg, rgba(6,16,30,0.86), rgba(6,16,30,0.55))',
+        borderBottom: '1px solid rgba(255,224,138,0.18)',
+        boxShadow: '0 10px 24px rgba(0,0,0,0.18)',
+        backdropFilter: 'blur(12px)',
         flexShrink: 0,
+        position: 'relative',
+        zIndex: 2,
       }}>
-        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#D4A017' }}>
+        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.18rem', color: '#FFE08A', textShadow: '0 0 14px rgba(214,168,79,0.35)' }}>
           Kachuful
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button
             onClick={() => { setShowRules(s => !s); setShowScores(false); }}
             style={{
-              padding: '4px 10px',
+              padding: '6px 12px',
               borderRadius: 6,
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: '#A89B8C',
-              fontSize: '0.65rem',
+              background: 'rgba(255,255,255,0.075)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              color: '#C8BA9D',
+              fontSize: '0.76rem',
+              fontWeight: 800,
               cursor: 'pointer',
             }}
           >
@@ -119,12 +124,13 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           <button
             onClick={() => { setShowScores(s => !s); setShowRules(false); }}
             style={{
-              padding: '4px 10px',
+              padding: '6px 12px',
               borderRadius: 6,
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: '#A89B8C',
-              fontSize: '0.65rem',
+              background: 'rgba(255,255,255,0.075)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              color: '#C8BA9D',
+              fontSize: '0.76rem',
+              fontWeight: 800,
               cursor: 'pointer',
             }}
           >
@@ -140,16 +146,18 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
         flexDirection: 'column',
         overflowX: 'hidden',
         overflowY: 'auto',
-        padding: '8px',
-        gap: 8,
+        padding: '10px',
+        gap: 10,
+        position: 'relative',
+        zIndex: 1,
       }}>
         {/* Other players */}
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: 8,
+          gap: 10,
           justifyContent: 'center',
-          padding: '4px 8px',
+          padding: '8px 8px 4px',
         }}>
           {otherPlayers.map((player) => {
             const seatIdx = players.findIndex(p => p.id === player.id);
@@ -172,15 +180,20 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
 
         {/* Center: trick area + trump */}
         <div style={{
-          flex: 1,
+          flex: isMobileBidding ? '0 0 auto' : 1,
           display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: 8,
+          flexDirection: isMobile ? (isMobileBidding ? 'row' : 'column') : 'row',
+          gap: isMobileBidding ? 8 : 12,
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: 0,
         }}>
-          <div style={{ flex: 1, width: '100%', maxWidth: 440 }}>
+          <div style={{
+            flex: 1,
+            width: '100%',
+            maxWidth: 520,
+            display: isMobileBidding ? 'none' : 'block',
+          }}>
             <TrickArea
               currentTrick={displayTrick}
               players={players}
@@ -240,11 +253,15 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           left: 0,
           right: 0,
           padding: '12px',
-          background: 'rgba(15,37,68,0.9)',
-          borderTop: '1px solid rgba(212,160,23,0.2)',
+          background: 'rgba(7,20,38,0.94)',
+          borderTop: '1px solid rgba(255,224,138,0.22)',
           textAlign: 'center',
-          fontSize: '0.75rem',
-          color: '#A89B8C',
+          fontSize: '0.86rem',
+          fontWeight: 700,
+          color: '#C8BA9D',
+          boxShadow: '0 -12px 30px rgba(0,0,0,0.35)',
+          backdropFilter: 'blur(12px)',
+          zIndex: 190,
         }}>
           {bids[playerId] !== undefined
             ? `You bid ${bids[playerId]}. Waiting for ${currentBidder?.name || 'others'}...`
@@ -283,8 +300,9 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           <div style={{
             width: 'min(340px, 92vw)',
             height: '100%',
-            background: 'rgba(10,22,40,0.98)',
-            borderLeft: '1px solid rgba(212,160,23,0.25)',
+            background: 'rgba(6,16,30,0.98)',
+            borderLeft: '1px solid rgba(255,224,138,0.25)',
+            boxShadow: '-18px 0 48px rgba(0,0,0,0.42)',
             display: 'flex',
             flexDirection: 'column',
             overflowY: 'auto',
@@ -292,10 +310,10 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
             gap: 18,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.1rem', color: '#D4A017', fontWeight: 700 }}>
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.1rem', color: '#FFE08A', fontWeight: 700 }}>
                 How to Play
               </div>
-              <button onClick={() => setShowRules(false)} style={{ background: 'none', border: 'none', color: '#A89B8C', fontSize: '1.1rem', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setShowRules(false)} style={{ background: 'none', border: 'none', color: '#C8BA9D', fontSize: '1.1rem', cursor: 'pointer' }}>✕</button>
             </div>
 
             {[
@@ -333,8 +351,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
               },
             ].map(({ title, body }) => (
               <div key={title} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 14 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#D4A017', marginBottom: 6 }}>{title}</div>
-                <div style={{ fontSize: '0.75rem', color: '#C8BFAF', lineHeight: 1.65, whiteSpace: 'pre-line' }}>{body}</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#FFE08A', marginBottom: 6 }}>{title}</div>
+                <div style={{ fontSize: '0.84rem', color: '#D8C7A7', lineHeight: 1.65, whiteSpace: 'pre-line' }}>{body}</div>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
+import IntroScreen from './screens/IntroScreen';
 import LandingScreen from './screens/LandingScreen';
 import LobbyScreen from './screens/LobbyScreen';
 import GameScreen from './screens/GameScreen';
@@ -20,7 +21,8 @@ function getSocket() {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState('landing'); // landing | lobby | game | result
+  const hasInviteRoom = Boolean(new URLSearchParams(window.location.search).get('room'));
+  const [screen, setScreen] = useState(hasInviteRoom ? 'landing' : 'intro'); // intro | landing | lobby | game | result
   const [room, setRoom] = useState(null);
   const [playerId, setPlayerId] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -275,6 +277,10 @@ export default function App() {
 
   return (
     <div style={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative' }}>
+      {screen === 'intro' && (
+        <IntroScreen onPlay={() => setScreen('landing')} />
+      )}
+
       {screen === 'landing' && (
         <LandingScreen onJoined={handleJoined} />
       )}
