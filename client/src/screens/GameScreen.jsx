@@ -323,7 +323,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
               },
               {
                 title: '🃏 The Deck & Deal',
-                body: 'A standard 52-card deck is used. Cards dealt per round follow a pyramid: 1 card in round 1, increasing by 1 each round up to the max, then decreasing back to 1. With 2–5 players the max is 10 cards; with 6–7 players it scales down to fit the deck.',
+                body: 'A standard 52-card deck is used. Cards dealt per round follow a pyramid: 1 card in round 1, increasing by 1 each round up to the max, then decreasing back to 1. With 2–5 players the max is 10 cards; with 6–10 players it scales down to fit the deck.',
               },
               {
                 title: '♠ Trump Suit',
