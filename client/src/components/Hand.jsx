@@ -11,14 +11,16 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
 
   const sorted = sortHand(hand);
 
-  const handleCardClick = (card) => {
+  const handleCardClick = (card, sourceElement) => {
     if (!isMyTurn || phase !== 'playing') return;
     const valid = isValidPlay(card, hand, leadSuit);
     if (!valid) return;
 
     if (selectedCard && selectedCard.suit === card.suit && selectedCard.rank === card.rank) {
       // Second click confirms play
-      onPlayCard(card);
+      onPlayCard(card, {
+        sourceRect: sourceElement?.getBoundingClientRect?.(),
+      });
       setSelectedCard(null);
     } else {
       setSelectedCard(card);
@@ -62,18 +64,19 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
     const current = dragRef.current;
     if (!current || current.pointerId !== event.pointerId) return;
 
+    const sourceRect = event.currentTarget.getBoundingClientRect();
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     dragRef.current = null;
     setDragState(null);
 
     if (current.moved && current.y < (isMobile ? -64 : -72)) {
-      onPlayCard(card);
+      onPlayCard(card, { sourceRect });
       setSelectedCard(null);
       return;
     }
 
     if (!current.moved) {
-      handleCardClick(card);
+      handleCardClick(card, event.currentTarget);
     }
   };
 

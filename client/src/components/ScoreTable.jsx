@@ -23,7 +23,7 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
       display: 'flex',
       flexDirection: 'column',
       zIndex: 150,
-      animation: 'slide-up 0.3s ease',
+      animation: 'slide-in-right 0.3s ease',
       boxShadow: '-18px 0 48px rgba(0,0,0,0.42)',
       backdropFilter: 'blur(14px)',
     }}>

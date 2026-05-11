@@ -153,7 +153,7 @@ export default function App() {
       setMyHand(prev => prev.filter(c => !(c.suit === card.suit && c.rank === card.rank)));
     });
 
-    s.on('trick_complete', ({ winnerId, tricksWon, nextLeaderId, currentTrick: cleared }) => {
+    s.on('trick_complete', ({ tricksWon, nextLeaderId, currentTrick: cleared }) => {
       window.dispatchEvent(new CustomEvent('game-event', { detail: { type: 'trick_cleared' } }));
       setGameState(prev => {
         if (!prev) return prev;

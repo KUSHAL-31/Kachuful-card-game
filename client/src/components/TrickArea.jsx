@@ -58,7 +58,6 @@ export default function TrickArea({ currentTrick, players, trumpSuit, winnerId }
         position: 'relative',
       }}>
       {currentTrick.map(({ playerId, card, seatIndex }, index) => {
-        const player = players.find(p => p.id === playerId);
         const isWinner = winnerId && playerId === winnerId;
         const centerOffset = index - (cardCount - 1) / 2;
         const xStep = cardCount >= 8 ? (isMobile ? 25 : 34) : cardCount >= 6 ? (isMobile ? 28 : 38) : (isMobile ? 35 : 48);
@@ -73,7 +72,7 @@ export default function TrickArea({ currentTrick, players, trumpSuit, winnerId }
             transform: `translate(-50%, -50%) rotate(${rotate}deg)`,
             transformOrigin: 'center center',
             zIndex: isWinner ? 50 : index + 1,
-            animation: 'fade-in 0.3s ease',
+            animation: 'table-card-soft-in 160ms ease-out',
           }}>
             <div style={{
               outline: isWinner ? '2px solid #FFE08A' : 'none',
