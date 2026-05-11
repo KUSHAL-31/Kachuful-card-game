@@ -26,17 +26,17 @@ export default function PlayerSeat({
     borderRadius: 14,
     background: isActive
       ? isBot
-        ? 'linear-gradient(145deg, rgba(110,231,183,0.22), rgba(7,20,38,0.82))'
+        ? 'linear-gradient(145deg, rgba(125,92,255,0.28), rgba(17,34,64,0.9))'
         : 'linear-gradient(145deg, rgba(255,224,138,0.18), rgba(7,20,38,0.78))'
       : isBot
-      ? 'linear-gradient(145deg, rgba(15,118,110,0.38), rgba(7,20,38,0.64))'
+      ? 'linear-gradient(145deg, rgba(42,61,105,0.88), rgba(12,22,44,0.78))'
       : 'linear-gradient(145deg, rgba(16,39,67,0.72), rgba(7,20,38,0.58))',
     border: isActive
-      ? isBot ? '1.5px solid #6EE7B7' : '1.5px solid #FFE08A'
-      : isBot ? '1px solid rgba(110,231,183,0.26)' : '1px solid rgba(255,255,255,0.10)',
+      ? isBot ? '1.5px solid #A7B7FF' : '1.5px solid #FFE08A'
+      : isBot ? '1px solid rgba(167,183,255,0.34)' : '1px solid rgba(255,255,255,0.10)',
     boxShadow: isActive
-      ? isBot ? '0 12px 26px rgba(0,0,0,0.3), 0 0 18px rgba(110,231,183,0.22)' : '0 12px 26px rgba(0,0,0,0.3)'
-      : isBot ? '0 8px 18px rgba(0,0,0,0.18), inset 0 0 18px rgba(110,231,183,0.06)' : '0 8px 18px rgba(0,0,0,0.18)',
+      ? isBot ? '0 12px 26px rgba(0,0,0,0.3), 0 0 20px rgba(125,92,255,0.34)' : '0 12px 26px rgba(0,0,0,0.3)'
+      : isBot ? '0 8px 18px rgba(0,0,0,0.2), inset 0 0 18px rgba(99,179,237,0.08)' : '0 8px 18px rgba(0,0,0,0.18)',
     minWidth: 108,
     maxWidth: 150,
     transition: 'all 0.3s ease',
@@ -73,7 +73,7 @@ export default function PlayerSeat({
         gap: 5,
         fontSize: '0.86rem',
         fontWeight: 800,
-        color: isActive ? (isBot ? '#6EE7B7' : '#FFE08A') : '#FFF6E6',
+        color: isActive ? (isBot ? '#C7D2FE' : '#FFE08A') : '#F4F7FF',
         textAlign: 'center',
         maxWidth: 124,
         overflow: 'hidden',
@@ -85,8 +85,7 @@ export default function PlayerSeat({
             width: 7,
             height: 7,
             borderRadius: '50%',
-            background: '#6EE7B7',
-            boxShadow: '0 0 8px rgba(110,231,183,0.72)',
+            background: '#A7B7FF',
             flexShrink: 0,
           }} />
         )}
@@ -100,7 +99,7 @@ export default function PlayerSeat({
       {isActive && (
         <div style={{
           fontSize: '0.66rem',
-          color: isBot ? '#6EE7B7' : '#FFE08A',
+          color: isBot ? '#C7D2FE' : '#FFE08A',
           animation: 'pulse 1s ease infinite',
           fontWeight: 800,
         }}>
