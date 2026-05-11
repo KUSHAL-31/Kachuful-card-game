@@ -79,6 +79,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
 
   const isMobile = window.innerWidth < 768;
   const isMobileBidding = isMobile && phase === 'bidding';
+  const shouldScrollSeats = players.length > (isMobile ? 2 : 4);
 
   return (
     <div className="premium-table" style={{
@@ -145,19 +146,28 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
         display: 'flex',
         flexDirection: 'column',
         overflowX: 'hidden',
-        overflowY: 'auto',
-        padding: '10px',
-        gap: 10,
+        overflowY: 'hidden',
+        padding: isMobile ? '8px 8px 10px' : '10px',
+        gap: isMobile ? 8 : 10,
         position: 'relative',
         zIndex: 1,
       }}>
         {/* Other players */}
         <div style={{
+          flexShrink: 0,
+          width: '100%',
+          maxWidth: '100%',
           display: 'flex',
-          flexWrap: 'wrap',
-          gap: 10,
-          justifyContent: 'center',
-          padding: '8px 8px 4px',
+          flexWrap: 'nowrap',
+          gap: isMobile ? 8 : 10,
+          justifyContent: isMobile && shouldScrollSeats ? 'flex-start' : 'center',
+          alignItems: 'stretch',
+          padding: isMobile ? '14px 4px 6px' : '14px 8px 6px',
+          minHeight: isMobile ? 92 : 98,
+          overflowX: shouldScrollSeats ? 'auto' : 'hidden',
+          overflowY: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: shouldScrollSeats ? 'x proximity' : 'none',
         }}>
           {otherPlayers.map((player) => {
             const seatIdx = players.findIndex(p => p.id === player.id);
@@ -185,8 +195,10 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           flexDirection: isMobile ? (isMobileBidding ? 'row' : 'column') : 'row',
           gap: isMobileBidding ? 8 : 12,
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: isMobile && !isMobileBidding ? 'flex-start' : 'center',
           minHeight: 0,
+          overflow: 'hidden',
+          paddingTop: isMobileBidding ? 18 : (isMobile ? 14 : 0),
         }}>
           <div style={{
             flex: 1,
@@ -219,7 +231,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           flexDirection: 'column',
           alignItems: 'center',
           gap: 6,
-          paddingBottom: isMyBidTurn ? 320 : 8,
+          paddingBottom: isMyBidTurn ? 320 : (phase === 'playing' && !isMyTurn ? 58 : 8),
         }}>
 
           {/* Hand */}
@@ -266,6 +278,28 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           {bids[playerId] !== undefined
             ? `You bid ${bids[playerId]}. Waiting for ${currentBidder?.name || 'others'}...`
             : `Waiting for ${currentBidder?.name || 'others'} to bid...`}
+        </div>
+      )}
+
+      {/* Waiting for player to play */}
+      {phase === 'playing' && !isMyTurn && currentPlayer && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '12px',
+          background: 'rgba(7,20,38,0.94)',
+          borderTop: '1px solid rgba(255,224,138,0.22)',
+          textAlign: 'center',
+          fontSize: '0.86rem',
+          fontWeight: 700,
+          color: '#C8BA9D',
+          boxShadow: '0 -12px 30px rgba(0,0,0,0.35)',
+          backdropFilter: 'blur(12px)',
+          zIndex: 190,
+        }}>
+          Waiting for {currentPlayer.name || 'player'} to play...
         </div>
       )}
 

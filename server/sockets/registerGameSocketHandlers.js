@@ -134,6 +134,8 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
   if (explicit) {
     roomStore.removePlayer(roomCode, socket.id);
     socket.leave(roomCode);
+    if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;
+
     io.to(roomCode).emit('room_updated', {
       players: serializePlayers(roomStore.getRoom(roomCode)?.players || []),
     });
@@ -142,6 +144,8 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
 
   if (room.status === 'lobby') {
     roomStore.markDisconnected(roomCode, socket.id);
+    if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;
+
     io.to(roomCode).emit('room_updated', {
       players: serializePlayers(room.players),
     });
@@ -150,18 +154,13 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
   }
 
   roomStore.markDisconnected(roomCode, socket.id);
+  if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;
+
   io.to(roomCode).emit('player_disconnected', {
     playerId: socket.id,
     playerName: player.name,
     newHostId: room.hostId,
   });
-
-  const connectedHumanCount = room.players.filter(p => p.isConnected && !p.isBot).length;
-  if (connectedHumanCount === 0) {
-    roomStore.deleteRoom(roomCode);
-    return;
-  }
-
   const connectedParticipantCount = room.players.filter(p => p.isConnected).length;
   if (connectedParticipantCount <= 1 && room.status === 'playing') {
     room.status = 'finished';
@@ -185,6 +184,8 @@ function removeDisconnectedLobbyPlayer({ io, roomStore, roomCode, playerId }) {
   if (!player || player.isConnected) return;
 
   roomStore.removePlayer(roomCode, playerId);
+  if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;
+
   io.to(roomCode).emit('room_updated', {
     players: serializePlayers(roomStore.getRoom(roomCode)?.players || []),
   });

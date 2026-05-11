@@ -16,6 +16,7 @@ export default function PlayerSeat({
   const isActive = isCurrentTurn || isCurrentBidder;
   const hasBid = bid !== undefined && bid !== null;
   const isBot = !!player.isBot;
+  const isDesktop = window.innerWidth >= 768;
 
   const containerStyle = {
     display: 'flex',
@@ -35,10 +36,15 @@ export default function PlayerSeat({
       ? isBot ? '1.5px solid #A7B7FF' : '1.5px solid #FFE08A'
       : isBot ? '1px solid rgba(167,183,255,0.34)' : '1px solid rgba(255,255,255,0.10)',
     boxShadow: isActive
-      ? isBot ? '0 12px 26px rgba(0,0,0,0.3), 0 0 20px rgba(125,92,255,0.34)' : '0 12px 26px rgba(0,0,0,0.3)'
-      : isBot ? '0 8px 18px rgba(0,0,0,0.2), inset 0 0 18px rgba(99,179,237,0.08)' : '0 8px 18px rgba(0,0,0,0.18)',
-    minWidth: 108,
-    maxWidth: 150,
+      ? isBot
+        ? isDesktop ? '0 5px 12px rgba(0,0,0,0.18), 0 0 14px rgba(125,92,255,0.24)' : '0 12px 26px rgba(0,0,0,0.3), 0 0 20px rgba(125,92,255,0.34)'
+        : isDesktop ? '0 5px 12px rgba(0,0,0,0.18)' : '0 12px 26px rgba(0,0,0,0.3)'
+      : isBot
+      ? isDesktop ? '0 3px 8px rgba(0,0,0,0.14), inset 0 0 14px rgba(99,179,237,0.06)' : '0 8px 18px rgba(0,0,0,0.2), inset 0 0 18px rgba(99,179,237,0.08)'
+      : isDesktop ? '0 3px 8px rgba(0,0,0,0.12)' : '0 8px 18px rgba(0,0,0,0.18)',
+    minWidth: 104,
+    maxWidth: 142,
+    flex: '0 0 auto',
     transition: 'all 0.3s ease',
     animation: isActive ? 'glow-gold 1.5s ease infinite' : 'none',
     position: 'relative',

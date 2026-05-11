@@ -1,0 +1,28 @@
+Original prompt: Improve the multiplayer card game's frontend UI and layout while preserving working gameplay.
+
+Notes:
+- Current focus: make the trick table handle many played cards without horizontal scrolling or vertical growth.
+- Updated trick area to render played cards as a compact overlapping fan. For more than 4 cards, player names are hidden so the rank/suit corners remain readable.
+- Verified with `npm run build` in `client`.
+- Updated bottom hand layout to a shallow curved fan with per-card rotation and dynamic spacing so it fits mobile/desktop widths.
+- Verified with `npm run build` in `client`.
+- Added mobile table spacing so the trick/trump area starts lower below the top player rail.
+- Added pointer-based drag-up play gesture for valid hand cards; tap/tap-again behavior remains.
+- Verified with `npm run build` in `client`.
+- Increased mobile trick table height from 152px to 184px and increased empty table/fan inner height.
+- Verified with `npm run build` in `client`.
+- Removed player names below cards in the trick table.
+- Added bottom playing-phase status strip: "Waiting for [player] to play..." when it is not the local player's turn.
+- Updated score drawer ranking so players with equal scores share the same displayed rank.
+- Verified with `npm run build` in `client`.
+- Added extra bottom padding while the playing wait strip is visible so the hand is lifted above the strip.
+- Verified with `npm run build` in `client`.
+- Added backend room cleanup rule: if a room has no connected human players, it is deleted immediately, covering bot-only rooms and single-player disconnects.
+- Verified changed backend files with `node --check`.
+- Fixed lobby alignment for many players by making the lobby card a column layout with an internally scrollable player list and fixed action footer.
+- Verified with `npm run build` in `client`.
+- Added bidding-only mobile spacing above the trump area, kept desktop player rail centered, and reduced desktop player-card bottom shadows.
+- Verified with `npm run build` in `client`.
+- Removed player names below cards in the trick table.
+- Added bottom playing-phase status strip: "Waiting for [player] to play..." when it is not the local player's turn.
+- Verified with `npm run build` in `client`.
