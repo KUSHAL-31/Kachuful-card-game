@@ -53,14 +53,15 @@ function createRoom(hostId, hostName, customCode) {
 function joinRoom(roomCode, playerId, playerName) {
   const room = rooms.get(roomCode.toUpperCase());
   if (!room) return { error: 'Room not found' };
-  if (room.status === 'playing') return { error: 'Game already in progress' };
-  if (room.players.length >= MAX_PLAYERS) return { error: 'Room is full' };
 
   const existingIndex = room.players.findIndex(player => player.name === playerName && !player.isConnected);
   if (existingIndex !== -1) {
-    reconnectPlayer(room, existingIndex, playerId);
-    return { room, player: room.players[existingIndex], rejoined: true };
+    const { oldId } = reconnectPlayer(room, existingIndex, playerId);
+    return { room, player: room.players[existingIndex], rejoined: true, oldId };
   }
+
+  if (room.status === 'playing') return { error: 'Game already in progress' };
+  if (room.players.length >= MAX_PLAYERS) return { error: 'Room is full' };
 
   const player = {
     id: playerId,
@@ -152,16 +153,26 @@ function reconnectPlayer(room, existingIndex, playerId) {
     room.hostId = playerId;
   }
 
-  if (room.game?.hands) {
+  if (room.game && oldId !== playerId) {
     const gamePlayer = room.game.players[existingIndex];
-    if (gamePlayer?.id !== playerId) {
+    if (gamePlayer) {
       gamePlayer.id = playerId;
+    }
+    if (room.game.hands) {
       movePlayerKey(room.game.hands, oldId, playerId);
-      movePlayerKey(room.game.bids, oldId, playerId);
-      movePlayerKey(room.game.tricksWon, oldId, playerId);
-      movePlayerKey(room.game.scores, oldId, playerId);
+    }
+    movePlayerKey(room.game.bids, oldId, playerId);
+    movePlayerKey(room.game.tricksWon, oldId, playerId);
+    movePlayerKey(room.game.scores, oldId, playerId);
+    room.game.currentTrick = (room.game.currentTrick || []).map(trickCard => (
+      trickCard.playerId === oldId ? { ...trickCard, playerId } : trickCard
+    ));
+    if (room.game.trickWinner === oldId) {
+      room.game.trickWinner = playerId;
     }
   }
+
+  return { oldId };
 }
 
 function movePlayerKey(container, oldId, newId) {
@@ -200,6 +211,7 @@ function touchRoom(room) {
 function cleanupInactiveRooms() {
   const now = Date.now();
   for (const [roomCode, room] of rooms.entries()) {
+    if (room.status === 'playing') continue;
     if (now - room.lastActivity >= ROOM_EXPIRY_MS) {
       rooms.delete(roomCode);
     }
