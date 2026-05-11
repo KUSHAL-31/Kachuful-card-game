@@ -35,6 +35,7 @@ function initGame(players) {
     currentBidderIndex: 0,
     hands: {},
     currentTrick: [],
+    playedCards: [],
     leadSuit: null,
     currentTurnIndex: 0,
     trickLeaderIndex: 0,
@@ -79,6 +80,7 @@ function startRound(gameState) {
     currentBidderIndex: 0,
     hands,
     currentTrick: [],
+    playedCards: [],
     leadSuit: null,
     currentTurnIndex: firstTrickLeaderIndex,
     trickLeaderIndex: firstTrickLeaderIndex,
@@ -175,10 +177,11 @@ function playCard(gameState, playerId, card) {
     return { error: validationError };
   }
 
-  const { players, currentTurnIndex, hands, currentTrick, leadSuit, trickLeaderIndex, tricksWon, scores, numPlayers, cardsThisRound, trumpSuit, bids, currentRound, totalRounds, roundHistory } = gameState;
+  const { players, currentTurnIndex, hands, currentTrick, leadSuit, trickLeaderIndex, tricksWon, scores, numPlayers, cardsThisRound, trumpSuit, bids, currentRound, totalRounds, roundHistory, playedCards = [] } = gameState;
 
   const newHand = hands[playerId].filter(c => !(c.suit === card.suit && c.rank === card.rank));
   const newHands = { ...hands, [playerId]: newHand };
+  const newPlayedCards = [...playedCards, card];
 
   const newTrick = [...currentTrick, {
     playerId,
@@ -195,6 +198,7 @@ function playCard(gameState, playerId, card) {
       state: {
         ...gameState,
         hands: newHands,
+        playedCards: newPlayedCards,
         currentTrick: newTrick,
         leadSuit: newLeadSuit,
         currentTurnIndex: nextTurnIndex,
@@ -243,6 +247,7 @@ function playCard(gameState, playerId, card) {
       state: {
         ...gameState,
         hands: newHands,
+        playedCards: newPlayedCards,
         currentTrick: newTrick,
         leadSuit: newLeadSuit,
         tricksWon: newTricksWon,
@@ -267,6 +272,7 @@ function playCard(gameState, playerId, card) {
     state: {
       ...gameState,
       hands: newHands,
+      playedCards: newPlayedCards,
       currentTrick: newTrick,
       leadSuit: newLeadSuit,
       tricksWon: newTricksWon,

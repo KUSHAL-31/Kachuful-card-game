@@ -151,24 +151,19 @@ export default function App() {
     });
 
     s.on('trick_complete', ({ winnerId, tricksWon, nextLeaderId, currentTrick: cleared }) => {
-      // Dispatch event for GameScreen to show winner briefly
-      window.dispatchEvent(new CustomEvent('game-event', { detail: { type: 'trick_winner', winnerId } }));
-
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('game-event', { detail: { type: 'trick_cleared' } }));
-        setGameState(prev => {
-          if (!prev) return prev;
-          const nextLeaderIndex = prev.players.findIndex(p => p.id === nextLeaderId);
-          return {
-            ...prev,
-            currentTrick: [],
-            leadSuit: null,
-            tricksWon,
-            currentTurnIndex: nextLeaderIndex,
-            trickLeaderIndex: nextLeaderIndex,
-          };
-        });
-      }, 1500);
+      window.dispatchEvent(new CustomEvent('game-event', { detail: { type: 'trick_cleared' } }));
+      setGameState(prev => {
+        if (!prev) return prev;
+        const nextLeaderIndex = prev.players.findIndex(p => p.id === nextLeaderId);
+        return {
+          ...prev,
+          currentTrick: [],
+          leadSuit: null,
+          tricksWon,
+          currentTurnIndex: nextLeaderIndex,
+          trickLeaderIndex: nextLeaderIndex,
+        };
+      });
     });
 
     s.on('round_complete', ({ roundResult, scores, players, nextRound }) => {
@@ -258,6 +253,10 @@ export default function App() {
     emit('start_game', { roomCode: roomCodeRef.current });
   };
 
+  const handleSetBots = (count) => {
+    emit('set_bots', { roomCode: roomCodeRef.current, count });
+  };
+
   const handleLeave = () => {
     if (roomCodeRef.current) {
       emit('leave_room', { roomCode: roomCodeRef.current });
@@ -291,6 +290,7 @@ export default function App() {
           playerId={playerId}
           isHost={isHost}
           onStart={handleStart}
+          onSetBots={handleSetBots}
           onLeave={handleLeave}
         />
       )}
