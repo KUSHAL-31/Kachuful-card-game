@@ -1,5 +1,6 @@
 const rooms = new Map();
-const ROOM_EXPIRY_MS = 2 * 60 * 60 * 1000; // 2 hours
+const ROOM_EXPIRY_MS = 45 * 60 * 1000; // 45 minutes
+const ROOM_CLEANUP_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_ROOMS = 3;
 
 function generateRoomCode() {
@@ -40,7 +41,6 @@ function createRoom(hostId, hostName, customCode) {
   };
 
   rooms.set(roomCode, room);
-  scheduleExpiry(roomCode);
   return room;
 }
 
@@ -142,14 +142,16 @@ function roomExists(roomCode) {
   return rooms.has(roomCode?.toUpperCase());
 }
 
-function scheduleExpiry(roomCode) {
-  setTimeout(() => {
-    const room = rooms.get(roomCode);
-    if (room && Date.now() - room.lastActivity >= ROOM_EXPIRY_MS) {
+function cleanupInactiveRooms() {
+  const now = Date.now();
+  for (const [roomCode, room] of rooms.entries()) {
+    if (now - room.lastActivity >= ROOM_EXPIRY_MS) {
       rooms.delete(roomCode);
     }
-  }, ROOM_EXPIRY_MS);
+  }
 }
+
+setInterval(cleanupInactiveRooms, ROOM_CLEANUP_INTERVAL_MS);
 
 function deleteRoom(roomCode) {
   rooms.delete(roomCode);
@@ -159,4 +161,4 @@ function getRoomCount() {
   return rooms.size;
 }
 
-module.exports = { createRoom, joinRoom, getRoom, removePlayer, markDisconnected, roomExists, deleteRoom, getRoomCount };
+module.exports = { createRoom, joinRoom, getRoom, removePlayer, markDisconnected, roomExists, deleteRoom, getRoomCount, cleanupInactiveRooms };
