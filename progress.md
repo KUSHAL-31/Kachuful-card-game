@@ -30,6 +30,8 @@ Notes:
 - Verified with `npm run build` in `client`.
 - Changed lobby actions to a compact one-row layout on mobile and made the player list scrollable with touch scrolling.
 - Verified with `npm run build` in `client`.
+- Fixed active-game disconnect/reconnect handling: active games are no longer deleted by inactivity cleanup, bot-only deletion after socket disconnect now waits 60s, and same-name reconnect is allowed during active games with game ids/hands/current trick remapped.
+- Verified backend syntax with `node --check` and ran a direct reconnect sanity check.
 - Removed player names below cards in the trick table.
 - Added bottom playing-phase status strip: "Waiting for [player] to play..." when it is not the local player's turn.
 - Verified with `npm run build` in `client`.

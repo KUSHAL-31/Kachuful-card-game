@@ -1,5 +1,9 @@
-const { LOBBY_DISCONNECT_GRACE_MS } = require('../config/appConfig');
+const {
+  ACTIVE_DISCONNECT_GRACE_MS,
+  LOBBY_DISCONNECT_GRACE_MS,
+} = require('../config/appConfig');
 const { serializePlayers, sanitizeRoom } = require('../serializers/playerSerializer');
+const { getPublicGameState } = require('../serializers/gameSerializer');
 
 function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
   const socketRoomMap = new Map();
@@ -32,6 +36,15 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
 
       if (room.status === 'playing' && room.game) {
         gameOrchestrator.sendGameState(socket, room, socket.id);
+        io.to(code).emit('game_started', {
+          gameState: getPublicGameState(room.game),
+        });
+        if (result.rejoined) {
+          io.to(code).emit('player_reconnected', {
+            oldPlayerId: result.oldId,
+            playerId: socket.id,
+          });
+        }
       }
     });
 
@@ -144,7 +157,7 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
 
   if (room.status === 'lobby') {
     roomStore.markDisconnected(roomCode, socket.id);
-    if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;
+    scheduleDeleteIfNoConnectedHumans({ roomStore, roomCode, delayMs: LOBBY_DISCONNECT_GRACE_MS });
 
     io.to(roomCode).emit('room_updated', {
       players: serializePlayers(room.players),
@@ -154,7 +167,7 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
   }
 
   roomStore.markDisconnected(roomCode, socket.id);
-  if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;
+  scheduleDeleteIfNoConnectedHumans({ roomStore, roomCode, delayMs: ACTIVE_DISCONNECT_GRACE_MS });
 
   io.to(roomCode).emit('player_disconnected', {
     playerId: socket.id,
@@ -189,6 +202,12 @@ function removeDisconnectedLobbyPlayer({ io, roomStore, roomCode, playerId }) {
   io.to(roomCode).emit('room_updated', {
     players: serializePlayers(roomStore.getRoom(roomCode)?.players || []),
   });
+}
+
+function scheduleDeleteIfNoConnectedHumans({ roomStore, roomCode, delayMs }) {
+  setTimeout(() => {
+    roomStore.deleteRoomIfNoConnectedHumans(roomCode);
+  }, delayMs);
 }
 
 module.exports = { registerGameSocketHandlers };
