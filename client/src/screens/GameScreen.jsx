@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Hand from '../components/Hand';
 import TrickArea from '../components/TrickArea';
 import PlayerSeat from '../components/PlayerSeat';
+import Card from '../components/Card';
 import BidPanel from '../components/BidPanel';
 import TrumpIndicator from '../components/TrumpIndicator';
 import ScoreTable from '../components/ScoreTable';
@@ -14,6 +15,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
   const [trickWinner, setTrickWinner] = useState(null);
   const [displayTrick, setDisplayTrick] = useState([]);
   const [cardSubmitted, setCardSubmitted] = useState(false);
+  const [flyingCards, setFlyingCards] = useState([]);
+  const trickTargetRef = useRef(null);
 
   const {
     players = [],
@@ -67,7 +70,6 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.detail?.type === 'trick_winner') setTrickWinner(e.detail.winnerId);
       if (e.detail?.type === 'trick_cleared') {
         setDisplayTrick([]);
         setTrickWinner(null);
@@ -85,7 +87,42 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
 
   const isMobile = window.innerWidth < 768;
   const isMobileBidding = isMobile && phase === 'bidding';
-  const shouldScrollSeats = players.length > (isMobile ? 2 : 4);
+  const shouldScrollSeats = players.length > (isMobile ? 3 : 4);
+
+  const animateCardToTable = (card, sourceRect) => {
+    const targetRect = trickTargetRef.current?.getBoundingClientRect?.();
+    if (!card || !sourceRect || !targetRect) return;
+
+    const id = `${card.suit}-${card.rank}-${Date.now()}`;
+    const targetX = targetRect.left + targetRect.width / 2 - sourceRect.width / 2;
+    const targetY = targetRect.top + targetRect.height / 2 - sourceRect.height / 2;
+    const cardFlight = {
+      id,
+      card,
+      from: {
+        left: sourceRect.left,
+        top: sourceRect.top,
+        width: sourceRect.width,
+        height: sourceRect.height,
+      },
+      deltaX: targetX - sourceRect.left,
+      deltaY: targetY - sourceRect.top,
+      active: false,
+    };
+
+    setFlyingCards(prev => [...prev, cardFlight]);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setFlyingCards(prev => prev.map(item => (
+          item.id === id ? { ...item, active: true } : item
+        )));
+      });
+    });
+  };
+
+  const removeFlyingCard = (id) => {
+    setFlyingCards(prev => prev.filter(card => card.id !== id));
+  };
 
   return (
     <div className="premium-table" style={{
@@ -211,13 +248,16 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
             width: '100%',
             maxWidth: 520,
             display: isMobileBidding ? 'none' : 'block',
+            position: 'relative',
           }}>
-            <TrickArea
-              currentTrick={displayTrick}
-              players={players}
-              trumpSuit={trumpSuit}
-              winnerId={trickWinner}
-            />
+            <div ref={trickTargetRef}>
+              <TrickArea
+                currentTrick={displayTrick}
+                players={players}
+                trumpSuit={trumpSuit}
+                winnerId={trickWinner}
+              />
+            </div>
           </div>
 
           <div style={{ flexShrink: 0 }}>
@@ -243,7 +283,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           {/* Hand */}
           <Hand
             hand={myHand}
-            onPlayCard={(card) => {
+            onPlayCard={(card, meta = {}) => {
+              animateCardToTable(card, meta.sourceRect);
               setCardSubmitted(true);
               emit('play_card', { roomCode, card });
             }}
@@ -254,6 +295,36 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           />
         </div>
       </div>
+
+      {flyingCards.map(item => (
+        <div
+          key={item.id}
+          onTransitionEnd={() => removeFlyingCard(item.id)}
+          style={{
+            position: 'fixed',
+            left: item.from.left,
+            top: item.from.top,
+            width: item.from.width,
+            height: item.from.height,
+            zIndex: 260,
+            pointerEvents: 'none',
+            transform: item.active
+              ? `translate3d(${item.deltaX}px, ${item.deltaY}px, 0) rotate(-4deg) scale(1.04)`
+              : 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
+            opacity: item.active ? 0.92 : 1,
+            transition: 'transform 260ms cubic-bezier(0.18, 0.82, 0.24, 1), opacity 260ms ease',
+            filter: 'drop-shadow(0 18px 28px rgba(0,0,0,0.34))',
+            willChange: 'transform, opacity',
+          }}
+        >
+          <Card
+            card={item.card}
+            isTrump={item.card.suit === trumpSuit}
+            size={item.from.width > 74 ? 'mobile' : 'normal'}
+            style={{ width: item.from.width, height: item.from.height }}
+          />
+        </div>
+      ))}
 
       {/* Bid panel */}
       {isMyBidTurn && (
