@@ -12,6 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const FINISHED_ROOM_CLEANUP_MS = 5 * 60 * 1000;
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] },
@@ -196,6 +198,7 @@ io.on('connection', (socket) => {
               winners,
               players: room.game.players,
             });
+            scheduleFinishedRoomCleanup(roomCode);
           } else {
             setTimeout(() => {
               room.game = startRound(room.game);
@@ -336,8 +339,19 @@ function handleLeave(socket, roomCode, explicit) {
         players: room.game?.players || [],
         reason: 'Not enough players',
       });
+      scheduleFinishedRoomCleanup(roomCode);
     }
   }
+}
+
+function scheduleFinishedRoomCleanup(roomCode) {
+  setTimeout(() => {
+    const room = getRoom(roomCode);
+    if (room?.status === 'finished') {
+      deleteRoom(roomCode);
+      console.log(`Deleted finished room ${roomCode} after cleanup timeout`);
+    }
+  }, FINISHED_ROOM_CLEANUP_MS);
 }
 
 function sendGameState(socket, room, playerId) {
