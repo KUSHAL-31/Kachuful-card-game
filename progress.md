@@ -23,6 +23,13 @@ Notes:
 - Verified with `npm run build` in `client`.
 - Added bidding-only mobile spacing above the trump area, kept desktop player rail centered, and reduced desktop player-card bottom shadows.
 - Verified with `npm run build` in `client`.
+- Increased maximum active room capacity from 3 to 10.
+- Updated lobby player list to show real players individually and collapse bots into a single summary row so bot names are revealed only in the game arena.
+- Verified `server/config/appConfig.js` with `node --check` and client with `npm run build`.
+- Added the developed-by footer to the lobby room screen and reserved bottom space so it stays visible after players/bots are added.
+- Verified with `npm run build` in `client`.
+- Changed lobby actions to a compact one-row layout on mobile and made the player list scrollable with touch scrolling.
+- Verified with `npm run build` in `client`.
 - Removed player names below cards in the trick table.
 - Added bottom playing-phase status strip: "Waiting for [player] to play..." when it is not the local player's turn.
 - Verified with `npm run build` in `client`.

@@ -1,4 +1,4 @@
-const MAX_ROOMS = 3;
+const MAX_ROOMS = 10;
 const MAX_PLAYERS = 10;
 
 const ROOM_EXPIRY_MS = 10 * 60 * 1000;
