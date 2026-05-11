@@ -60,7 +60,15 @@ function joinRoom(roomCode, playerId, playerName) {
     return { room, player: room.players[existingIndex], rejoined: true, oldId };
   }
 
-  if (room.status === 'playing') return { error: 'Game already in progress' };
+  if (room.status === 'playing') {
+    // Handle reconnect race: new socket arrives before server processes old socket's disconnect
+    const connectedIndex = room.players.findIndex(player => player.name === playerName && player.isConnected);
+    if (connectedIndex !== -1) {
+      const { oldId } = reconnectPlayer(room, connectedIndex, playerId);
+      return { room, player: room.players[connectedIndex], rejoined: true, oldId };
+    }
+    return { error: 'Game already in progress' };
+  }
   if (room.players.length >= MAX_PLAYERS) return { error: 'Room is full' };
 
   const player = {
@@ -126,9 +134,12 @@ function markDisconnected(roomCode, playerId) {
   const room = getRoom(roomCode);
   if (!room) return null;
 
-  const player = room.players.find(p => p.id === playerId);
-  if (player) {
-    player.isConnected = false;
+  const playerIndex = room.players.findIndex(p => p.id === playerId);
+  if (playerIndex !== -1) {
+    room.players[playerIndex].isConnected = false;
+    if (room.game?.players[playerIndex]) {
+      room.game.players[playerIndex].isConnected = false;
+    }
     touchRoom(room);
   }
 
@@ -157,6 +168,7 @@ function reconnectPlayer(room, existingIndex, playerId) {
     const gamePlayer = room.game.players[existingIndex];
     if (gamePlayer) {
       gamePlayer.id = playerId;
+      gamePlayer.isConnected = true;
     }
     if (room.game.hands) {
       movePlayerKey(room.game.hands, oldId, playerId);
