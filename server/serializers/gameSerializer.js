@@ -1,6 +1,12 @@
 function getPublicGameState(game) {
   return {
-    players: game.players,
+    players: game.players.map(p => ({
+      id: p.id,
+      name: p.name,
+      seatIndex: p.seatIndex,
+      isBot: p.isBot,
+      isConnected: p.isConnected !== false, // default true for bots and pre-game players
+    })),
     numPlayers: game.numPlayers,
     currentRound: game.currentRound,
     totalRounds: game.totalRounds,

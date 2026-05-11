@@ -36,7 +36,8 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
 
       if (room.status === 'playing' && room.game) {
         gameOrchestrator.sendGameState(socket, room, socket.id);
-        io.to(code).emit('game_started', {
+        // Broadcast updated game state (with new player IDs) to everyone else in the room
+        socket.to(code).emit('game_started', {
           gameState: getPublicGameState(room.game),
         });
         if (result.rejoined) {
@@ -132,17 +133,17 @@ function joinOrCreateRoom({ roomStore, code, socketId, playerName, isCreating })
 
   const result = roomStore.joinRoom(code, socketId, playerName.trim());
   if (result.error) return result;
-  return { room: result.room };
+  return { room: result.room, rejoined: result.rejoined, oldId: result.oldId };
 }
 
 function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, roomCode, explicit }) {
+  socketRoomMap.delete(socket.id);
+
   const room = roomStore.getRoom(roomCode);
   if (!room) return;
 
   const player = room.players.find(p => p.id === socket.id);
   if (!player) return;
-
-  socketRoomMap.delete(socket.id);
 
   if (explicit) {
     roomStore.removePlayer(roomCode, socket.id);

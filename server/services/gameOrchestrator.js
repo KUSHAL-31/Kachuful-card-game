@@ -22,11 +22,11 @@ class GameOrchestrator {
       name: player.name,
       seatIndex: player.seatIndex,
       isBot: !!player.isBot,
+      isConnected: player.isConnected !== false,
     })));
     room.game = startRound(room.game);
 
     this.emitRoundStart(roomCode, room);
-    this.scheduleBotTurn(roomCode);
   }
 
   handleBid(roomCode, playerId, bid) {
@@ -73,6 +73,13 @@ class GameOrchestrator {
       totalRounds: room.game.totalRounds,
       forbiddenBid: null,
     });
+
+    // Only kick off the bot chain here if the first bidder is a bot.
+    // If a human bids first, handleBid will start the chain — preventing
+    // duplicate parallel chains that accumulate over multiple rounds.
+    if (firstBidder?.isBot) {
+      this.scheduleBotTurn(roomCode);
+    }
   }
 
   applyBidResult(roomCode, room, playerId, bid, result) {
@@ -157,7 +164,6 @@ class GameOrchestrator {
         if (!nextRoom?.game || nextRoom.status !== 'playing') return;
         nextRoom.game = startRound(nextRoom.game);
         this.emitRoundStart(roomCode, nextRoom);
-        this.scheduleBotTurn(roomCode);
       }, 4000);
     }, 1500);
   }
@@ -240,32 +246,12 @@ class GameOrchestrator {
   }
 
   sendGameState(socket, room, playerId) {
+    // game_started already carries the complete state (phase, currentBidderIndex,
+    // currentTurnIndex, leadSuit, currentTrick, bids, etc.) via getPublicGameState.
+    // Sending bidding_start / playing_start here would reset currentBidderIndex to 0
+    // and wipe leadSuit / currentTrick on the client, causing "Not your turn" errors.
     socket.emit('game_started', { gameState: getPublicGameState(room.game) });
     socket.emit('deal_hand', { hand: room.game.hands[playerId] || [] });
-
-    if (room.game.phase === 'bidding') {
-      const compulsoryPlayer = room.game.players[room.game.compulsoryPlayerIndex];
-      const currentBidderSeatIndex = room.game.biddingOrder[room.game.currentBidderIndex];
-      const currentBidder = room.game.players[currentBidderSeatIndex];
-      socket.emit('bidding_start', {
-        biddingOrder: room.game.biddingOrder.map(i => room.game.players[i].id),
-        compulsoryPlayerId: compulsoryPlayer.id,
-        currentBidderId: currentBidder.id,
-        trumpSuit: room.game.trumpSuit,
-        cardsThisRound: room.game.cardsThisRound,
-        currentRound: room.game.currentRound,
-        totalRounds: room.game.totalRounds,
-        bids: room.game.bids,
-      });
-    } else if (room.game.phase === 'playing') {
-      const currentPlayer = room.game.players[room.game.currentTurnIndex];
-      socket.emit('playing_start', {
-        bids: room.game.bids,
-        firstPlayerId: currentPlayer.id,
-        currentRound: room.game.currentRound,
-        trumpSuit: room.game.trumpSuit,
-      });
-    }
   }
 }
 

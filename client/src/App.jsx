@@ -56,7 +56,10 @@ export default function App() {
       setPlayerId(pid);
       setIsHost(host);
       roomCodeRef.current = room.roomCode;
-      setScreen('lobby');
+      // Don't navigate to lobby if reconnecting mid-game; game_started will restore the game screen
+      if (room.status !== 'playing') {
+        setScreen('lobby');
+      }
     });
 
     s.on('room_updated', ({ players, status }) => {
