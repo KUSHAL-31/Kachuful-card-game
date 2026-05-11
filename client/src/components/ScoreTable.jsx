@@ -1,6 +1,16 @@
 import React from 'react';
 
 export default function ScoreTable({ players, bids, tricksWon, scores, onClose }) {
+  const rankedPlayers = [...players]
+    .sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0))
+    .reduce((ranked, player, index) => {
+      const score = scores?.[player.id] ?? 0;
+      const previous = ranked[index - 1];
+      const displayRank = previous && score === previous.score ? previous.displayRank : index + 1;
+      ranked.push({ player, score, displayRank });
+      return ranked;
+    }, []);
+
   return (
     <div style={{
       position: 'fixed',
@@ -36,12 +46,10 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
-        {[...players]
-          .sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0))
-          .map((player, rank) => {
+        {rankedPlayers
+          .map(({ player, score, displayRank }) => {
             const bid = bids?.[player.id];
             const won = tricksWon?.[player.id] ?? 0;
-            const score = scores?.[player.id] ?? 0;
             const hasBid = bid !== undefined && bid !== null;
             const hitBid = hasBid && won === bid;
 
@@ -66,7 +74,7 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
                   color: '#C8BA9D',
                   flexShrink: 0,
                 }}>
-                  {rank + 1}
+                  {displayRank}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>

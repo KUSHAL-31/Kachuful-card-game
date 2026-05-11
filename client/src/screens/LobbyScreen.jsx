@@ -70,6 +70,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
   const botCount = players.filter(player => player.isBot).length;
   const maxBots = Math.max(0, MAX_PLAYERS - humanCount);
   const canStart = isHost && players.length >= 2;
+  const isMobile = window.innerWidth < 768;
 
   return (
     <div className="premium-table" style={{
@@ -77,32 +78,40 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
-      padding: 24,
+      justifyContent: 'flex-start',
+      padding: isMobile ? '16px 14px max(16px, env(safe-area-inset-bottom))' : '24px 24px max(24px, env(safe-area-inset-bottom))',
       position: 'relative',
-      overflow: 'hidden',
+      overflowX: 'hidden',
+      overflowY: 'hidden',
     }}>
       <div style={{
         fontFamily: 'Playfair Display, serif',
-        fontSize: '2.5rem',
+        fontSize: isMobile ? '2.1rem' : '2.5rem',
         color: '#FFE08A',
         textShadow: '0 4px 18px rgba(0,0,0,0.55), 0 0 18px rgba(214,168,79,0.28)',
+        marginTop: isMobile ? 0 : 8,
         marginBottom: 4,
         textAlign: 'center',
+        flexShrink: 0,
       }}>
         Kachuful
       </div>
-      <div style={{ fontSize: '0.95rem', color: '#D8C7A7', marginBottom: 30, textAlign: 'center', fontWeight: 700 }}>
+      <div style={{ fontSize: '0.95rem', color: '#D8C7A7', marginBottom: isMobile ? 14 : 30, textAlign: 'center', fontWeight: 700, flexShrink: 0 }}>
         Waiting for players...
       </div>
 
       <div className="glass-panel" style={{
         width: 'min(440px, 100%)',
         borderRadius: 16,
-        padding: '24px 20px',
+        padding: isMobile ? '18px 16px' : '24px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: isMobile ? 'calc(100dvh - 112px)' : 'calc(100dvh - 150px)',
+        minHeight: 0,
+        overflow: 'hidden',
       }}>
         {/* Room code */}
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? 16 : 24, flexShrink: 0 }}>
           <div style={{ fontSize: '0.78rem', color: '#C8BA9D', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
             ROOM CODE
           </div>
@@ -244,7 +253,13 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
         )}
 
         {/* Players list */}
-        <div style={{ marginBottom: 20 }}>
+        <div style={{
+          marginBottom: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+        }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -259,7 +274,16 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
             </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            flex: 1,
+            minHeight: 0,
+            overflowY: players.length > 4 ? 'auto' : 'visible',
+            paddingRight: players.length > 4 ? 4 : 0,
+            paddingBottom: 4,
+          }}>
             {players.map((player, i) => (
               <div key={player.id} style={{
                 display: 'flex',
@@ -342,54 +366,64 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
         </div>
 
         {/* Actions */}
-        {isHost ? (
+        <div style={{
+          flexShrink: 0,
+          paddingTop: 12,
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          {isHost ? (
+            <button
+              onClick={onStart}
+              disabled={!canStart}
+              style={{
+                width: '100%',
+                padding: '15px',
+                borderRadius: 8,
+                background: canStart ? 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)' : 'rgba(214,168,79,0.18)',
+                color: canStart ? '#091626' : '#8C806D',
+                fontWeight: 700,
+                fontSize: '1.08rem',
+                cursor: canStart ? 'pointer' : 'not-allowed',
+                border: canStart ? '1px solid rgba(255,224,138,0.68)' : '1px solid rgba(255,224,138,0.12)',
+                marginBottom: 10,
+                transition: 'all 0.2s',
+              }}
+            >
+              {players.length < 2 ? 'Waiting for 2+ players...' : 'Start Game'}
+            </button>
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '12px',
+              marginBottom: 10,
+              color: '#C8BA9D',
+              fontSize: '0.92rem',
+              fontStyle: 'italic',
+              borderRadius: 8,
+              background: 'rgba(255,255,255,0.045)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              Waiting for host to start the game...
+            </div>
+          )}
+
           <button
-            onClick={onStart}
-            disabled={!canStart}
+            onClick={onLeave}
             style={{
               width: '100%',
-              padding: '15px',
+              padding: '8px',
               borderRadius: 8,
-              background: canStart ? 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)' : 'rgba(214,168,79,0.18)',
-              color: canStart ? '#091626' : '#8C806D',
-              fontWeight: 700,
-              fontSize: '1.08rem',
-              cursor: canStart ? 'pointer' : 'not-allowed',
-              border: canStart ? '1px solid rgba(255,224,138,0.68)' : '1px solid rgba(255,224,138,0.12)',
-              marginBottom: 10,
-              transition: 'all 0.2s',
+              background: 'transparent',
+              color: '#C8BA9D',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            {players.length < 2 ? 'Waiting for 2+ players...' : 'Start Game'}
+            Leave Room
           </button>
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '12px',
-            color: '#C8BA9D',
-            fontSize: '0.92rem',
-            fontStyle: 'italic',
-          }}>
-            Waiting for host to start the game...
-          </div>
-        )}
-
-        <button
-          onClick={onLeave}
-          style={{
-            width: '100%',
-            padding: '8px',
-            borderRadius: 8,
-            background: 'transparent',
-            color: '#C8BA9D',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          Leave Room
-        </button>
+        </div>
       </div>
     </div>
   );
