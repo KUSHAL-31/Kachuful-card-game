@@ -42,6 +42,7 @@ export default function Card({
   faceDown = false,
   onClick,
   disabled = false,
+  faded = false,
   selected = false,
   isTrump = false,
   playerName,
@@ -83,7 +84,7 @@ export default function Card({
     width: dims.width,
     height: dims.height,
     borderRadius: 9,
-    background: disabled
+    background: faded
       ? 'linear-gradient(145deg, #ded8c8, #cfc6b2)'
       : 'linear-gradient(145deg, #fffdf7 0%, #fff7e6 58%, #f0dfb9 100%)',
     border: selected
@@ -95,7 +96,7 @@ export default function Card({
     ...trumpGlow,
     position: 'relative',
     cursor: isClickable ? 'pointer' : 'default',
-    opacity: disabled ? 0.5 : 1,
+    opacity: faded ? 0.5 : 1,
     transition: 'transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease',
     userSelect: 'none',
     flexShrink: 0,

@@ -13,6 +13,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
   const [roundSummary, setRoundSummary] = useState(null);
   const [trickWinner, setTrickWinner] = useState(null);
   const [displayTrick, setDisplayTrick] = useState([]);
+  const [cardSubmitted, setCardSubmitted] = useState(false);
 
   const {
     players = [],
@@ -38,7 +39,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
   const currentBidderSeatIndex = biddingOrder[currentBidderIndex];
   const currentBidder = players[currentBidderSeatIndex];
 
-  const isMyTurn = currentPlayer?.id === playerId && phase === 'playing';
+  const isMyTurn = currentPlayer?.id === playerId && phase === 'playing' && !cardSubmitted;
   const isMyBidTurn = currentBidder?.id === playerId && phase === 'bidding';
 
   const otherPlayers = players;
@@ -58,6 +59,11 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
       setTrickWinner(null);
     }
   }, [currentTrick]);
+
+  // Unlock card interactions once the server confirms the play (turn advances)
+  useEffect(() => {
+    setCardSubmitted(false);
+  }, [currentTurnIndex, currentTrick.length]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -237,7 +243,10 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           {/* Hand */}
           <Hand
             hand={myHand}
-            onPlayCard={(card) => emit('play_card', { roomCode, card })}
+            onPlayCard={(card) => {
+              setCardSubmitted(true);
+              emit('play_card', { roomCode, card });
+            }}
             isMyTurn={isMyTurn}
             leadSuit={leadSuit}
             trumpSuit={trumpSuit}
