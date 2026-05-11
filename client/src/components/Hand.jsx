@@ -84,10 +84,14 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
 
   const isMobile = window.innerWidth < 768;
   const cardWidth = isMobile ? 78 : 80;
-  const availableWidth = Math.max(cardWidth, window.innerWidth - (isMobile ? 24 : 64));
-  const naturalStep = isMobile ? 42 : 38;
+  const availableWidth = Math.max(cardWidth, window.innerWidth - (isMobile ? 20 : 64));
+  // Tighter natural spacing for larger hands so all cards stay on screen
+  const naturalStep = isMobile
+    ? (sorted.length > 8 ? 24 : sorted.length > 6 ? 30 : sorted.length > 4 ? 36 : 42)
+    : (sorted.length > 8 ? 28 : sorted.length > 6 ? 32 : 38);
+  const minStep = isMobile ? 16 : 20;
   const xStep = sorted.length > 1
-    ? Math.min(naturalStep, Math.max(isMobile ? 24 : 28, (availableWidth - cardWidth) / (sorted.length - 1)))
+    ? Math.min(naturalStep, Math.max(minStep, (availableWidth - cardWidth) / (sorted.length - 1)))
     : 0;
   const fanWidth = sorted.length > 1
     ? (sorted.length - 1) * xStep + cardWidth
@@ -139,9 +143,14 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
           const isSelected = selectedCard?.suit === card.suit && selectedCard?.rank === card.rank;
           const valid = isMyTurn && phase === 'playing' ? isValidPlay(card, hand, leadSuit) : true;
           const disabled = !isMyTurn || phase !== 'playing' || !valid;
+          // Fade only invalid cards when it's your turn — so the legal plays stand out.
+          // When it's not your turn (or during bidding), show all cards at full brightness.
+          const faded = isMyTurn && phase === 'playing' && !valid;
           const centerOffset = i - (sorted.length - 1) / 2;
-          const rotate = Math.max(-18, Math.min(18, centerOffset * (sorted.length > 7 ? 4 : 5.5)));
-          const curveY = Math.abs(centerOffset) * (isMobile ? 3.2 : 2.6);
+          const rotateScale = sorted.length > 8 ? 3 : sorted.length > 6 ? 4 : 5.5;
+          const rotate = Math.max(-18, Math.min(18, centerOffset * rotateScale));
+          const curveScale = isMobile ? (sorted.length > 7 ? 2 : 3.2) : 2.6;
+          const curveY = Math.abs(centerOffset) * curveScale;
           const left = (handWidth - fanWidth) / 2 + i * xStep;
           const isDragging = dragState?.card?.suit === card.suit && dragState?.card?.rank === card.rank;
           const dragTransform = isDragging
@@ -169,6 +178,7 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
               <Card
                 card={card}
                 disabled={disabled}
+                faded={faded}
                 selected={isSelected}
                 isTrump={card.suit === trumpSuit}
                 size={isMobile ? 'mobile' : 'normal'}

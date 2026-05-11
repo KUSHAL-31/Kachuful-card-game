@@ -14,6 +14,13 @@ function chooseBotBid(game, botId) {
   const possibleBids = Array.from({ length: game.cardsThisRound + 1 }, (_, bid) => bid)
     .filter(bid => bid !== forbidden);
 
+  // How many tricks are still "unclaimed" by the players who bid before us.
+  // Positive room  → tricks available to win.
+  // Zero room      → others already claimed every trick; hard to win any.
+  // Negative room  → others over-bid; at least one will fail, creating steal opportunities.
+  const bidsSoFar = Object.values(game.bids).reduce((a, b) => a + b, 0);
+  const room = game.cardsThisRound - bidsSoFar;
+
   let bestBid = possibleBids[0] ?? 0;
   let bestScore = -Infinity;
   const startedAt = Date.now();
@@ -40,7 +47,20 @@ function chooseBotBid(game, botId) {
       runs++;
     }
 
-    const normalized = runs > 0 ? score / runs : -Math.abs(bid - handBidEstimate);
+    let normalized = runs > 0 ? score / runs : -Math.abs(bid - handBidEstimate);
+
+    // Pool-awareness adjustment: reward bids that align with how many tricks
+    // are realistically available given what others have already claimed.
+    if (room <= 0) {
+      // Others have claimed all tricks or more — hard to win even 1.
+      // Strongly reward bidding 0; penalise each trick above that.
+      normalized -= bid * 0.25;
+    } else if (bid > room) {
+      // Bidding more than the unclaimed pool requires beating players who
+      // already declared they want those same tricks. Apply a moderate penalty.
+      normalized -= (bid - room) * 0.12;
+    }
+
     if (normalized > bestScore || (normalized === bestScore && Math.abs(bid - handBidEstimate) < Math.abs(bestBid - handBidEstimate))) {
       bestScore = normalized;
       bestBid = bid;
