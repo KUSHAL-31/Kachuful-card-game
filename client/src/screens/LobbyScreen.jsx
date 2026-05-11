@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { MAX_PLAYERS } from '../config/gameConfig';
 
-export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }) {
+export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots, onLeave }) {
   const [copied, setCopied] = useState(false);
   const [inviteStatus, setInviteStatus] = useState('idle');
 
@@ -65,6 +66,9 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
   };
 
   const players = room?.players || [];
+  const humanCount = players.filter(player => !player.isBot).length;
+  const botCount = players.filter(player => player.isBot).length;
+  const maxBots = Math.max(0, MAX_PLAYERS - humanCount);
   const canStart = isHost && players.length >= 2;
 
   return (
@@ -183,6 +187,62 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
           </div>
         )}
 
+        {isHost && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '10px 12px',
+            marginBottom: 14,
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.055)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: '#FFF6E6',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+            }}>
+              <input
+                type="checkbox"
+                checked={botCount > 0}
+                onChange={e => onSetBots(e.target.checked ? Math.min(1, maxBots) : 0)}
+                disabled={maxBots === 0}
+                style={{ accentColor: '#D6A84F' }}
+              />
+              Add Bots
+            </label>
+
+            <select
+              value={botCount}
+              onChange={e => onSetBots(Number(e.target.value))}
+              disabled={maxBots === 0 || botCount === 0}
+              style={{
+                minWidth: 92,
+                padding: '7px 10px',
+                borderRadius: 8,
+                background: 'rgba(7,20,38,0.78)',
+                border: '1px solid rgba(255,224,138,0.26)',
+                color: botCount > 0 ? '#FFE08A' : '#8C806D',
+                fontWeight: 800,
+                fontSize: '0.86rem',
+              }}
+            >
+              <option value={0}>0 Bots</option>
+              {Array.from({ length: maxBots }, (_, i) => i + 1).map(count => (
+                <option key={count} value={count}>
+                  {count} Bot{count !== 1 ? 's' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Players list */}
         <div style={{ marginBottom: 20 }}>
           <div style={{
@@ -195,7 +255,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
               PLAYERS
             </span>
             <span style={{ fontSize: '0.82rem', color: '#C8BA9D', fontWeight: 800 }}>
-              {players.length} / 7
+              {players.length} / {MAX_PLAYERS}
             </span>
           </div>
 
@@ -228,13 +288,28 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onLeave }
                   color: '#091626',
                   flexShrink: 0,
                 }}>
-                  {player.name[0].toUpperCase()}
+                  {player.isBot ? 'AI' : player.name[0].toUpperCase()}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '0.98rem', fontWeight: 800, color: '#FFF6E6' }}>
                     {player.name}
                     {player.id === playerId && (
                       <span style={{ marginLeft: 6, fontSize: '0.7rem', color: '#C8BA9D' }}>(you)</span>
+                    )}
+                    {player.isBot && (
+                      <span style={{
+                        marginLeft: 6,
+                        padding: '1px 5px',
+                        borderRadius: 4,
+                        background: 'rgba(255,224,138,0.14)',
+                        border: '1px solid rgba(255,224,138,0.28)',
+                        color: '#FFE08A',
+                        fontSize: '0.58rem',
+                        fontWeight: 900,
+                        verticalAlign: 'middle',
+                      }}>
+                        BOT
+                      </span>
                     )}
                   </div>
                   {room?.hostId === player.id && (

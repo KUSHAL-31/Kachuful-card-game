@@ -15,6 +15,7 @@ export default function PlayerSeat({
 }) {
   const isActive = isCurrentTurn || isCurrentBidder;
   const hasBid = bid !== undefined && bid !== null;
+  const isBot = !!player.isBot;
 
   const containerStyle = {
     display: 'flex',
@@ -24,10 +25,18 @@ export default function PlayerSeat({
     padding: '11px 14px',
     borderRadius: 14,
     background: isActive
-      ? 'linear-gradient(145deg, rgba(255,224,138,0.18), rgba(7,20,38,0.78))'
+      ? isBot
+        ? 'linear-gradient(145deg, rgba(125,92,255,0.28), rgba(17,34,64,0.9))'
+        : 'linear-gradient(145deg, rgba(255,224,138,0.18), rgba(7,20,38,0.78))'
+      : isBot
+      ? 'linear-gradient(145deg, rgba(42,61,105,0.88), rgba(12,22,44,0.78))'
       : 'linear-gradient(145deg, rgba(16,39,67,0.72), rgba(7,20,38,0.58))',
-    border: isActive ? '1.5px solid #FFE08A' : '1px solid rgba(255,255,255,0.10)',
-    boxShadow: isActive ? '0 12px 26px rgba(0,0,0,0.3)' : '0 8px 18px rgba(0,0,0,0.18)',
+    border: isActive
+      ? isBot ? '1.5px solid #A7B7FF' : '1.5px solid #FFE08A'
+      : isBot ? '1px solid rgba(167,183,255,0.34)' : '1px solid rgba(255,255,255,0.10)',
+    boxShadow: isActive
+      ? isBot ? '0 12px 26px rgba(0,0,0,0.3), 0 0 20px rgba(125,92,255,0.34)' : '0 12px 26px rgba(0,0,0,0.3)'
+      : isBot ? '0 8px 18px rgba(0,0,0,0.2), inset 0 0 18px rgba(99,179,237,0.08)' : '0 8px 18px rgba(0,0,0,0.18)',
     minWidth: 108,
     maxWidth: 150,
     transition: 'all 0.3s ease',
@@ -58,16 +67,29 @@ export default function PlayerSeat({
 
       {/* Player name */}
       <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 5,
         fontSize: '0.86rem',
         fontWeight: 800,
-        color: isActive ? '#FFE08A' : '#FFF6E6',
+        color: isActive ? (isBot ? '#C7D2FE' : '#FFE08A') : '#F4F7FF',
         textAlign: 'center',
         maxWidth: 124,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
       }}>
-        {player.name}
+        {isBot && (
+          <span style={{
+            width: 7,
+            height: 7,
+            borderRadius: '50%',
+            background: '#A7B7FF',
+            flexShrink: 0,
+          }} />
+        )}
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{player.name}</span>
         {isMe && (
           <span style={{ fontSize: '0.62rem', color: '#C8BA9D', marginLeft: 4 }}>(you)</span>
         )}
@@ -77,7 +99,7 @@ export default function PlayerSeat({
       {isActive && (
         <div style={{
           fontSize: '0.66rem',
-          color: '#FFE08A',
+          color: isBot ? '#C7D2FE' : '#FFE08A',
           animation: 'pulse 1s ease infinite',
           fontWeight: 800,
         }}>

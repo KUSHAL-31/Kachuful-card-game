@@ -94,7 +94,7 @@ export default function LandingScreen({ onJoined }) {
           ♠ ♦ ♣ ♥
         </div>
         <div style={{ marginTop: 10, fontSize: '0.9rem', color: '#D8C7A7', fontWeight: 700 }}>
-          Sharp minds, risky moves & lucky cards · 2–7 players
+          Sharp minds, risky moves & lucky cards · 2–10 players
         </div>
       </div>
 
