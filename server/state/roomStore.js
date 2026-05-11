@@ -178,6 +178,17 @@ function deleteRoom(roomCode) {
   rooms.delete(roomCode?.toUpperCase());
 }
 
+function deleteRoomIfNoConnectedHumans(roomCode) {
+  const room = getRoom(roomCode);
+  if (!room) return false;
+
+  const hasConnectedHuman = room.players.some(player => player.isConnected && !player.isBot);
+  if (hasConnectedHuman) return false;
+
+  rooms.delete(room.roomCode);
+  return true;
+}
+
 function getRoomCount() {
   return rooms.size;
 }
@@ -226,6 +237,7 @@ module.exports = {
   markDisconnected,
   roomExists,
   deleteRoom,
+  deleteRoomIfNoConnectedHumans,
   getRoomCount,
   cleanupInactiveRooms,
   setBotCount,
