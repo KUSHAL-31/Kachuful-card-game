@@ -238,13 +238,13 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           flexDirection: isMobile ? (isMobileBidding ? 'row' : 'column') : 'row',
           gap: isMobileBidding ? 8 : 12,
           alignItems: 'center',
-          justifyContent: isMobile && !isMobileBidding ? 'flex-start' : 'center',
+          justifyContent: 'center',
           minHeight: 0,
           overflow: 'hidden',
           paddingTop: isMobileBidding ? 18 : (isMobile ? 14 : 0),
         }}>
           <div style={{
-            flex: 1,
+            flex: isMobile ? '0 0 auto' : 1,
             width: '100%',
             maxWidth: 520,
             display: isMobileBidding ? 'none' : 'block',

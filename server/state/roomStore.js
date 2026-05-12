@@ -7,8 +7,8 @@ const {
 
 const rooms = new Map();
 const BOT_NAMES = [
-  'Astra', 'Blitz', 'Cipher', 'Dynamo', 'Echo', 'Fable', 'Nexus',
-  'Orion', 'Pixel', 'Quest', 'Raven', 'Sage', 'Titan', 'Vega',
+  'Pappu', 'Bunty', 'Babloo', 'Guddu', 'Rinku', 'Pintu', 'Golu',
+  'Sonu', 'Monu', 'Raju', 'Chintu', 'Munna', 'Chotu', 'Bittu', 'Lucky',
 ];
 
 function generateRoomCode() {
