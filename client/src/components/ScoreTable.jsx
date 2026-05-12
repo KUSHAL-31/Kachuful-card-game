@@ -6,7 +6,7 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
     .reduce((ranked, player, index) => {
       const score = scores?.[player.id] ?? 0;
       const previous = ranked[index - 1];
-      const displayRank = previous && score === previous.score ? previous.displayRank : index + 1;
+      const displayRank = previous && score === previous.score ? previous.displayRank : ranked.length + 1;
       ranked.push({ player, score, displayRank });
       return ranked;
     }, []);
