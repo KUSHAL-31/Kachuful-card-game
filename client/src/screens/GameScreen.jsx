@@ -277,7 +277,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           flexDirection: 'column',
           alignItems: 'center',
           gap: 6,
-          paddingBottom: isMyBidTurn ? 320 : (phase === 'playing' && !isMyTurn ? 58 : 8),
+          paddingBottom: isMyBidTurn ? (isMobile ? 320 : 220) : (phase === 'playing' && !isMyTurn ? 58 : 8),
         }}>
 
           {/* Hand */}
