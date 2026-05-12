@@ -35,7 +35,7 @@ class GameOrchestrator {
     if (result.error) return result;
 
     this.applyBidResult(roomCode, room, playerId, bid, result);
-    this.scheduleBotTurn(roomCode);
+    if (this._nextPlayerIsBot(room.game)) this.scheduleBotTurn(roomCode);
     return { ok: true };
   }
 
@@ -119,7 +119,7 @@ class GameOrchestrator {
     });
 
     if (!result.trickComplete) {
-      this.scheduleBotTurn(roomCode);
+      if (this._nextPlayerIsBot(room.game)) this.scheduleBotTurn(roomCode);
       return;
     }
 
@@ -182,12 +182,24 @@ class GameOrchestrator {
         nextLeaderId: result.nextLeaderId,
         currentTrick: [],
       });
-      this.scheduleBotTurn(roomCode);
+      if (this._nextPlayerIsBot(room.game)) this.scheduleBotTurn(roomCode);
     }, 1500);
   }
 
   scheduleBotTurn(roomCode) {
     setTimeout(() => this.processBotTurn(roomCode), getRandomBotDelayMs());
+  }
+
+  _nextPlayerIsBot(game) {
+    if (!game) return false;
+    if (game.phase === 'bidding') {
+      const seat = game.biddingOrder[game.currentBidderIndex];
+      return game.players[seat]?.isBot === true;
+    }
+    if (game.phase === 'playing') {
+      return game.players[game.currentTurnIndex]?.isBot === true;
+    }
+    return false;
   }
 
   processBotTurn(roomCode) {
@@ -206,7 +218,7 @@ class GameOrchestrator {
         return;
       }
       this.applyBidResult(roomCode, room, player.id, bid, result);
-      this.scheduleBotTurn(roomCode);
+      if (this._nextPlayerIsBot(room.game)) this.scheduleBotTurn(roomCode);
       return;
     }
 
