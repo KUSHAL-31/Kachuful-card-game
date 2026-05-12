@@ -87,7 +87,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
 
   const isMobile = window.innerWidth < 768;
   const isMobileBidding = isMobile && phase === 'bidding';
-  const shouldScrollSeats = players.length > (isMobile ? 3 : 4);
+  const shouldScrollSeats = players.length > (isMobile ? 2 : 4);
 
   const animateCardToTable = (card, sourceRect) => {
     const targetRect = trickTargetRef.current?.getBoundingClientRect?.();
