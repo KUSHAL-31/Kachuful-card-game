@@ -55,8 +55,15 @@ export default function IntroScreen({ onPlay }) {
               color: isRed ? '#c51f38' : '#17171d',
             }}
           >
-            <span>{card.rank}</span>
+            <div className="intro-card-corner intro-card-corner-top">
+              <span>{card.rank}</span>
+              <small>{card.suit}</small>
+            </div>
             <strong>{card.suit}</strong>
+            <div className="intro-card-corner intro-card-corner-bottom">
+              <span>{card.rank}</span>
+              <small>{card.suit}</small>
+            </div>
           </div>
         );
       })}
