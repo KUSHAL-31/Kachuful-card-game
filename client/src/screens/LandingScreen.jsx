@@ -181,7 +181,7 @@ export default function LandingScreen({ onJoined }) {
                 transition: 'color 0.22s ease',
               }}
             >
-              {t === 'create' ? 'Create Room' : 'Join Room'}
+              {t === 'create' ? 'Create' : 'Join'}
             </button>
           ))}
         </div>
