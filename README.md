@@ -4,22 +4,6 @@ Kachuful is a real-time multiplayer trick-taking card game built with a React cl
 
 The project is designed as a server-authoritative multiplayer system: clients render state and submit player intent, while the backend validates every bid, validates every card play, resolves tricks, advances rounds, updates scores, schedules bots, and broadcasts public game state over sockets.
 
-## Game Overview
-
-Kachuful is a prediction-based trick-taking card game.
-
-- Players join a room and sit in turn order.
-- Each round deals a variable number of cards.
-- A trump suit rotates by round.
-- Players bid how many tricks they expect to win.
-- The compulsory player bids last and cannot make the total bid count exactly equal to the number of tricks available.
-- During play, players must follow the lead suit when possible.
-- Trump cards beat non-trump cards.
-- The highest card in the lead suit wins when no stronger trump is played.
-- Exact bids score `10 + tricksWon`; missed bids score `0`.
-- The compulsory player rotates each round.
-- The game runs through an increasing/decreasing card schedule and ends after all configured rounds.
-
 ## Tech Stack
 
 ### Frontend
@@ -76,67 +60,6 @@ The backend is split into clear ownership boundaries:
 - The orchestrator owns side effects: socket broadcasts, delayed trick clearing, bot turn scheduling, round transitions, and game cleanup.
 - Serializers control what state is public and prevent leaking private hands to other players.
 - The bot engine evaluates imperfect-information game states without mutating the live game directly.
-
-## Repository Structure
-
-```text
-.
-|-- client/
-|   |-- index.html
-|   |-- package.json
-|   |-- package-lock.json
-|   |-- public/
-|   |   `-- favicon.svg
-|   |-- src/
-|   |   |-- App.jsx
-|   |   |-- main.jsx
-|   |   |-- index.css
-|   |   |-- components/
-|   |   |   |-- BidPanel.jsx
-|   |   |   |-- Card.jsx
-|   |   |   |-- Hand.jsx
-|   |   |   |-- PlayerSeat.jsx
-|   |   |   |-- RoundSummaryModal.jsx
-|   |   |   |-- ScoreTable.jsx
-|   |   |   |-- TrickArea.jsx
-|   |   |   `-- TrumpIndicator.jsx
-|   |   |-- config/
-|   |   |   `-- gameConfig.js
-|   |   |-- hooks/
-|   |   |   `-- useSocket.js
-|   |   |-- screens/
-|   |   |   |-- GameScreen.jsx
-|   |   |   |-- IntroScreen.jsx
-|   |   |   |-- LandingScreen.jsx
-|   |   |   |-- LobbyScreen.jsx
-|   |   |   `-- ResultScreen.jsx
-|   |   `-- utils/
-|   |       `-- cardUtils.js
-|   `-- vite.config.js
-|-- server/
-|   |-- index.js
-|   |-- botEngine.js
-|   |-- constants.js
-|   |-- deckUtils.js
-|   |-- gameEngine.js
-|   |-- roomManager.js
-|   |-- config/
-|   |   `-- appConfig.js
-|   |-- routes/
-|   |   `-- roomRoutes.js
-|   |-- serializers/
-|   |   |-- gameSerializer.js
-|   |   `-- playerSerializer.js
-|   |-- services/
-|   |   `-- gameOrchestrator.js
-|   |-- sockets/
-|   |   `-- registerGameSocketHandlers.js
-|   `-- state/
-|       `-- roomStore.js
-|-- package.json
-|-- package-lock.json
-`-- progress.md
-```
 
 ## Important Files
 
@@ -495,73 +418,6 @@ The client keeps the last room code and player name in refs. On socket reconnect
 - Broadcasts a `player_reconnected` event to the room.
 
 This approach makes the game resilient to refreshes and transient network drops without needing a database or authentication system.
-
-## REST API
-
-The project also exposes lightweight REST endpoints for room discovery and room-code creation.
-
-### `POST /room/create`
-
-Request:
-
-```json
-{
-  "playerName": "Kushal"
-}
-```
-
-Response:
-
-```json
-{
-  "roomCode": "ABC123"
-}
-```
-
-### `GET /room/:code`
-
-Returns room metadata if the room exists and is joinable.
-
-Response:
-
-```json
-{
-  "roomCode": "ABC123",
-  "playerCount": 3
-}
-```
-
-## Game State Model
-
-The central game object tracks:
-
-- `players`
-- `numPlayers`
-- `maxCards`
-- `totalRounds`
-- `currentRound`
-- `cardsThisRound`
-- `trumpSuit`
-- `compulsoryPlayerIndex`
-- `phase`
-- `bids`
-- `biddingOrder`
-- `currentBidderIndex`
-- `hands`
-- `currentTrick`
-- `playedCards`
-- `leadSuit`
-- `currentTurnIndex`
-- `trickLeaderIndex`
-- `tricksWon`
-- `scores`
-- `roundHistory`
-
-Phases:
-
-```text
-roundStart -> bidding -> playing -> roundEnd -> bidding ... -> gameEnd
-```
 
 ## Configuration
 
