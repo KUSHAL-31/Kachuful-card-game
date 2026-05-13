@@ -114,25 +114,49 @@ input {
   background: linear-gradient(145deg, #fffdf7 0%, #fff7e6 58%, #f0dfb9 100%);
   border: 1px solid rgba(228, 211, 170, 0.95);
   box-shadow: 0 22px 48px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.88);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 10px;
+  display: block;
+  padding: 0;
   font-family: Georgia, serif;
   font-weight: 800;
   opacity: 0.82;
   animation: card-float 4.8s ease-in-out infinite;
-}
-
-.intro-floating-card span {
-  align-self: flex-start;
-  font-size: clamp(0.86rem, 2vw, 1.3rem);
+  overflow: hidden;
 }
 
 .intro-floating-card strong {
-  align-self: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: clamp(1.8rem, 4vw, 3.1rem);
   line-height: 1;
+}
+
+.intro-card-corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.intro-card-corner span {
+  font-size: clamp(0.78rem, 1.8vw, 1.16rem);
+}
+
+.intro-card-corner small {
+  font-size: clamp(0.54rem, 1.3vw, 0.84rem);
+}
+
+.intro-card-corner-top {
+  top: clamp(5px, 1vw, 9px);
+  left: clamp(5px, 1vw, 9px);
+}
+
+.intro-card-corner-bottom {
+  right: clamp(5px, 1vw, 9px);
+  bottom: clamp(5px, 1vw, 9px);
+  transform: rotate(180deg);
 }
 
 .intro-play-button {
