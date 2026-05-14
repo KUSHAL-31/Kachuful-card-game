@@ -72,7 +72,6 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
   const maxBots = Math.max(0, MAX_PLAYERS - humanCount);
   const canStart = isHost && players.length >= 2;
   const isMobile = window.innerWidth < 768;
-  const visibleLobbyRows = realPlayers.length + (botCount > 0 ? 1 : 0);
 
   return (
     <div className="premium-table" style={{
@@ -81,46 +80,53 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      padding: isMobile ? '16px 14px 78px' : '24px 24px 82px',
+      padding: isMobile ? 'clamp(10px, 2vh, 16px) 14px 78px' : '24px 24px 82px',
       position: 'relative',
       overflowX: 'hidden',
       overflowY: 'hidden',
     }}>
       <div style={{
         fontFamily: 'Playfair Display, serif',
-        fontSize: isMobile ? '2.1rem' : '2.5rem',
+        fontSize: isMobile ? 'clamp(1.6rem, 4vh, 2.1rem)' : '2.5rem',
         color: '#FFE08A',
         textShadow: '0 4px 18px rgba(0,0,0,0.55), 0 0 18px rgba(214,168,79,0.28)',
         marginTop: isMobile ? 0 : 8,
-        marginBottom: 4,
+        marginBottom: isMobile ? 'clamp(2px, 0.5vh, 4px)' : 4,
         textAlign: 'center',
         flexShrink: 0,
       }}>
         Kachuful
       </div>
-      <div style={{ fontSize: '0.95rem', color: '#D8C7A7', marginBottom: isMobile ? 14 : 30, textAlign: 'center', fontWeight: 700, flexShrink: 0 }}>
+      <div style={{
+        fontSize: isMobile ? '0.82rem' : '0.95rem',
+        color: '#D8C7A7',
+        marginBottom: isMobile ? 'clamp(8px, 1.6vh, 14px)' : 30,
+        textAlign: 'center',
+        fontWeight: 700,
+        flexShrink: 0,
+      }}>
         Waiting for players...
       </div>
 
       <div className="glass-panel" style={{
         width: 'min(440px, 100%)',
         borderRadius: 16,
-        padding: isMobile ? '18px 16px' : '24px 20px',
+        padding: isMobile ? 'clamp(12px, 2vh, 18px) 14px' : '24px 20px',
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: isMobile ? 'calc(100dvh - 174px)' : 'calc(100dvh - 210px)',
+        maxHeight: isMobile ? 'calc(100dvh - 160px)' : 'calc(100dvh - 210px)',
         minHeight: 0,
         overflow: 'hidden',
       }}>
         {/* Room code */}
-        <div style={{ textAlign: 'center', marginBottom: isMobile ? 16 : 24, flexShrink: 0 }}>
-          <div style={{ fontSize: '0.78rem', color: '#C8BA9D', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? 'clamp(10px, 1.8vh, 16px)' : 24, flexShrink: 0 }}>
+          <div style={{ fontSize: '0.72rem', color: '#C8BA9D', fontWeight: 800, letterSpacing: '0.1em', marginBottom: isMobile ? 4 : 8 }}>
             ROOM CODE
           </div>
           <div style={{
             fontFamily: 'Playfair Display, serif',
             fontVariantNumeric: 'lining-nums',
-            fontSize: '3rem',
+            fontSize: isMobile ? 'clamp(2rem, 5.5vh, 3rem)' : '3rem',
             color: '#FFE08A',
             letterSpacing: '0.3em',
             fontWeight: 700,
@@ -128,16 +134,16 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
           }}>
             {room?.roomCode}
           </div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: isMobile ? 6 : 8 }}>
             <button
               onClick={copyCode}
               style={{
-                padding: '6px 14px',
+                padding: isMobile ? '5px 12px' : '6px 14px',
                 borderRadius: 6,
                 background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.075)',
                 border: copied ? '1px solid #22C55E' : '1px solid rgba(255,255,255,0.1)',
                 color: copied ? '#22C55E' : '#C8BA9D',
-                fontSize: '0.8rem',
+                fontSize: '0.78rem',
                 fontWeight: 800,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
@@ -148,7 +154,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
             <button
               onClick={handleInvite}
               style={{
-                padding: '6px 16px',
+                padding: isMobile ? '5px 14px' : '6px 16px',
                 borderRadius: 6,
                 background: inviteStatus === 'copied' || inviteStatus === 'shared'
                   ? 'rgba(34,197,94,0.15)'
@@ -165,7 +171,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                   : inviteStatus === 'failed'
                   ? '#EF4444'
                   : '#FFE08A',
-                fontSize: '0.8rem',
+                fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
@@ -185,14 +191,14 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
         {/* Invite note */}
         {isHost && (
           <div style={{
-            fontSize: '0.72rem',
+            fontSize: '0.7rem',
             color: '#C8BA9D',
             textAlign: 'center',
-            padding: '6px 10px',
-            marginBottom: 8,
+            padding: isMobile ? '4px 8px' : '6px 10px',
+            marginBottom: isMobile ? 6 : 8,
             background: 'rgba(255,255,255,0.055)',
             borderRadius: 6,
-            lineHeight: 1.5,
+            lineHeight: 1.4,
           }}>
             After sharing invite, return to this screen within 60s to keep the room active.
           </div>
@@ -204,8 +210,8 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 12,
-            padding: '10px 12px',
-            marginBottom: 14,
+            padding: isMobile ? '7px 10px' : '10px 12px',
+            marginBottom: isMobile ? 10 : 14,
             borderRadius: 8,
             background: 'rgba(255,255,255,0.055)',
             border: '1px solid rgba(255,255,255,0.08)',
@@ -215,7 +221,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
               alignItems: 'center',
               gap: 8,
               color: '#FFF6E6',
-              fontSize: '0.9rem',
+              fontSize: isMobile ? '0.84rem' : '0.9rem',
               fontWeight: 800,
               cursor: 'pointer',
             }}>
@@ -234,14 +240,14 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
               onChange={e => onSetBots(Number(e.target.value))}
               disabled={maxBots === 0 || botCount === 0}
               style={{
-                minWidth: 92,
-                padding: '7px 10px',
+                minWidth: 84,
+                padding: isMobile ? '5px 8px' : '7px 10px',
                 borderRadius: 8,
                 background: 'rgba(7,20,38,0.78)',
                 border: '1px solid rgba(255,224,138,0.26)',
                 color: botCount > 0 ? '#FFE08A' : '#8C806D',
                 fontWeight: 800,
-                fontSize: '0.86rem',
+                fontSize: '0.84rem',
               }}
             >
               <option value={0}>0 Bots</option>
@@ -256,7 +262,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
 
         {/* Players list */}
         <div style={{
-          marginBottom: 16,
+          marginBottom: isMobile ? 10 : 16,
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
@@ -266,12 +272,12 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: 10,
+            marginBottom: isMobile ? 6 : 10,
           }}>
-            <span style={{ fontSize: '0.8rem', color: '#C8BA9D', fontWeight: 800, letterSpacing: '0.08em' }}>
+            <span style={{ fontSize: '0.76rem', color: '#C8BA9D', fontWeight: 800, letterSpacing: '0.08em' }}>
               PLAYERS
             </span>
-            <span style={{ fontSize: '0.82rem', color: '#C8BA9D', fontWeight: 800 }}>
+            <span style={{ fontSize: '0.78rem', color: '#C8BA9D', fontWeight: 800 }}>
               {players.length} / {MAX_PLAYERS}
             </span>
           </div>
@@ -279,7 +285,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
+            gap: isMobile ? 6 : 8,
             flex: 1,
             minHeight: 0,
             overflowY: 'auto',
@@ -292,7 +298,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                 display: 'flex',
                 alignItems: 'center',
                 gap: 10,
-                padding: '10px 12px',
+                padding: isMobile ? '7px 10px' : '10px 12px',
                 borderRadius: 8,
                 background: player.id === playerId
                   ? 'rgba(255,224,138,0.13)'
@@ -303,14 +309,14 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                 boxShadow: player.id === playerId ? '0 8px 18px rgba(0,0,0,0.18)' : 'none',
               }}>
                 <div style={{
-                  width: 34,
-                  height: 34,
+                  width: isMobile ? 30 : 34,
+                  height: isMobile ? 30 : 34,
                   borderRadius: '50%',
                   background: 'linear-gradient(180deg, #FFE08A, #D6A84F)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.88rem',
+                  fontSize: isMobile ? '0.8rem' : '0.88rem',
                   fontWeight: 700,
                   color: '#091626',
                   flexShrink: 0,
@@ -318,14 +324,14 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                   {player.name[0].toUpperCase()}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.98rem', fontWeight: 800, color: '#FFF6E6' }}>
+                  <div style={{ fontSize: isMobile ? '0.9rem' : '0.98rem', fontWeight: 800, color: '#FFF6E6' }}>
                     {player.name}
                     {player.id === playerId && (
-                      <span style={{ marginLeft: 6, fontSize: '0.7rem', color: '#C8BA9D' }}>(you)</span>
+                      <span style={{ marginLeft: 6, fontSize: '0.68rem', color: '#C8BA9D' }}>(you)</span>
                     )}
                   </div>
                   {room?.hostId === player.id && (
-                    <div style={{ fontSize: '0.72rem', color: '#FFE08A', fontWeight: 800 }}>Host</div>
+                    <div style={{ fontSize: '0.68rem', color: '#FFE08A', fontWeight: 800 }}>Host</div>
                   )}
                 </div>
                 <div style={{
@@ -342,14 +348,14 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                 display: 'flex',
                 alignItems: 'center',
                 gap: 10,
-                padding: '10px 12px',
+                padding: isMobile ? '7px 10px' : '10px 12px',
                 borderRadius: 8,
                 background: 'linear-gradient(145deg, rgba(42,61,105,0.58), rgba(12,22,44,0.48))',
                 border: '1px solid rgba(167,183,255,0.22)',
               }}>
                 <div style={{
-                  width: 34,
-                  height: 34,
+                  width: isMobile ? 30 : 34,
+                  height: isMobile ? 30 : 34,
                   borderRadius: '50%',
                   background: 'linear-gradient(180deg, #C7D2FE, #7D5CFF)',
                   display: 'flex',
@@ -363,10 +369,10 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                   +{botCount}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.98rem', fontWeight: 800, color: '#F4F7FF' }}>
+                  <div style={{ fontSize: isMobile ? '0.9rem' : '0.98rem', fontWeight: 800, color: '#F4F7FF' }}>
                     {botCount} bot opponent{botCount !== 1 ? 's' : ''} ready
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: '#C7D2FE', fontWeight: 700 }}>
+                  <div style={{ fontSize: '0.68rem', color: '#C7D2FE', fontWeight: 700 }}>
                     Names reveal when the game starts
                   </div>
                 </div>
@@ -387,11 +393,11 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
             {/* Empty slots */}
             {Array.from({ length: Math.max(0, 2 - players.length) }).map((_, i) => (
               <div key={`empty-${i}`} style={{
-                padding: '8px 12px',
+                padding: isMobile ? '6px 10px' : '8px 12px',
                 borderRadius: 8,
                 border: '1px dashed rgba(255,255,255,0.1)',
                 color: '#C8BA9D',
-                fontSize: '0.86rem',
+                fontSize: '0.84rem',
                 textAlign: 'center',
               }}>
                 Waiting for player...
@@ -403,27 +409,23 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
         {/* Actions */}
         <div style={{
           flexShrink: 0,
-          paddingTop: isMobile ? 10 : 12,
+          paddingTop: isMobile ? 8 : 12,
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}>
           {isHost ? (
-            <div style={{
-              display: 'flex',
-              gap: 8,
-              alignItems: 'stretch',
-            }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
               <button
                 onClick={onStart}
                 disabled={!canStart}
                 style={{
                   flex: 1,
                   minWidth: 0,
-                  padding: isMobile ? '11px 10px' : '15px',
+                  padding: isMobile ? '10px 10px' : '15px',
                   borderRadius: 8,
                   background: canStart ? 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)' : 'rgba(214,168,79,0.18)',
                   color: canStart ? '#091626' : '#8C806D',
                   fontWeight: 800,
-                  fontSize: isMobile ? '0.94rem' : '1.08rem',
+                  fontSize: isMobile ? '0.9rem' : '1.08rem',
                   cursor: canStart ? 'pointer' : 'not-allowed',
                   border: canStart ? '1px solid rgba(255,224,138,0.68)' : '1px solid rgba(255,224,138,0.12)',
                   transition: 'all 0.2s',
@@ -436,13 +438,13 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
               <button
                 onClick={onLeave}
                 style={{
-                  flex: isMobile ? '0 0 108px' : '0 0 128px',
-                  padding: isMobile ? '11px 8px' : '15px 10px',
+                  flex: isMobile ? '0 0 100px' : '0 0 128px',
+                  padding: isMobile ? '10px 8px' : '15px 10px',
                   borderRadius: 8,
                   background: 'rgba(255,255,255,0.045)',
                   color: '#C8BA9D',
                   fontWeight: 800,
-                  fontSize: isMobile ? '0.9rem' : '0.96rem',
+                  fontSize: isMobile ? '0.86rem' : '0.96rem',
                   cursor: 'pointer',
                   border: '1px solid rgba(255,255,255,0.09)',
                   whiteSpace: 'nowrap',
@@ -457,9 +459,9 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                 flex: 1,
                 minWidth: 0,
                 textAlign: 'center',
-                padding: isMobile ? '10px 8px' : '12px',
+                padding: isMobile ? '9px 8px' : '12px',
                 color: '#C8BA9D',
-                fontSize: isMobile ? '0.82rem' : '0.92rem',
+                fontSize: isMobile ? '0.8rem' : '0.92rem',
                 fontStyle: 'italic',
                 borderRadius: 8,
                 background: 'rgba(255,255,255,0.045)',
@@ -472,13 +474,13 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
               <button
                 onClick={onLeave}
                 style={{
-                  flex: isMobile ? '0 0 104px' : '0 0 128px',
-                  padding: isMobile ? '10px 8px' : '12px 10px',
+                  flex: isMobile ? '0 0 100px' : '0 0 128px',
+                  padding: isMobile ? '9px 8px' : '12px 10px',
                   borderRadius: 8,
                   background: 'transparent',
                   color: '#C8BA9D',
                   fontWeight: 800,
-                  fontSize: isMobile ? '0.86rem' : '0.9rem',
+                  fontSize: isMobile ? '0.84rem' : '0.9rem',
                   cursor: 'pointer',
                   border: '1px solid rgba(255,255,255,0.08)',
                   whiteSpace: 'nowrap',
