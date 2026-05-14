@@ -216,9 +216,10 @@ export default function App() {
     });
 
     s.on('error', ({ message }) => {
-      // Non-blocking toast-style error
       console.error('Game error:', message);
       showToast(message, 'error');
+      // Let GameScreen know a play was rejected so it can release the card lock
+      window.dispatchEvent(new CustomEvent('game-play-rejected'));
     });
 
     return () => {

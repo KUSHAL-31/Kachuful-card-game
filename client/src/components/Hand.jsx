@@ -137,8 +137,8 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
       <div style={{
         position: 'relative',
         width: handWidth,
-        height: isMobile ? 164 : 152,
-        paddingTop: 18,
+        height: 'clamp(108px, 19vh, 164px)',
+        paddingTop: 'clamp(12px, 2vh, 18px)',
         overflowX: 'visible',
         overflowY: 'visible',
       }}>

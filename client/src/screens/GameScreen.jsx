@@ -17,6 +17,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
   const [cardSubmitted, setCardSubmitted] = useState(false);
   const [flyingCards, setFlyingCards] = useState([]);
   const trickTargetRef = useRef(null);
+  const cardSubmitTimerRef = useRef(null);
+  const lastPlayedCardRef = useRef(null);
 
   const {
     players = [],
@@ -65,8 +67,21 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
 
   // Unlock card interactions once the server confirms the play (turn advances)
   useEffect(() => {
+    if (cardSubmitTimerRef.current) clearTimeout(cardSubmitTimerRef.current);
+    lastPlayedCardRef.current = null;
     setCardSubmitted(false);
   }, [currentTurnIndex, currentTrick.length]);
+
+  // Release the lock immediately if the server rejects the play (error event)
+  // or after 5s as a safety net for silent failures
+  useEffect(() => {
+    const handler = () => {
+      if (cardSubmitTimerRef.current) clearTimeout(cardSubmitTimerRef.current);
+      setCardSubmitted(false);
+    };
+    window.addEventListener('game-play-rejected', handler);
+    return () => window.removeEventListener('game-play-rejected', handler);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -137,7 +152,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '10px 14px',
+        padding: 'clamp(7px, 1.2vh, 10px) 14px',
         background: 'linear-gradient(180deg, rgba(6,16,30,0.86), rgba(6,16,30,0.55))',
         borderBottom: '1px solid rgba(255,224,138,0.18)',
         boxShadow: '0 10px 24px rgba(0,0,0,0.18)',
@@ -205,8 +220,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           gap: isMobile ? 8 : 10,
           justifyContent: isMobile && shouldScrollSeats ? 'flex-start' : 'center',
           alignItems: 'stretch',
-          padding: isMobile ? '14px 4px 6px' : '14px 8px 6px',
-          minHeight: isMobile ? 92 : 98,
+          padding: isMobile ? 'clamp(10px, 1.5vh, 14px) 4px clamp(4px, 0.8vh, 6px)' : '14px 8px 6px',
+          minHeight: isMobile ? 'clamp(78px, 13.5vh, 98px)' : 98,
           overflowX: shouldScrollSeats ? 'auto' : 'hidden',
           overflowY: 'hidden',
           WebkitOverflowScrolling: 'touch',
@@ -241,7 +256,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           justifyContent: 'center',
           minHeight: 0,
           overflow: 'hidden',
-          paddingTop: isMobileBidding ? 18 : (isMobile ? 14 : 0),
+          paddingTop: isMobileBidding ? 'clamp(6px, 1.2vh, 18px)' : (isMobile ? 10 : 0),
         }}>
           <div style={{
             flex: isMobile ? '0 0 auto' : 1,
@@ -277,7 +292,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           flexDirection: 'column',
           alignItems: 'center',
           gap: 6,
-          paddingBottom: isMyBidTurn ? (isMobile ? 320 : 220) : (phase === 'playing' && !isMyTurn ? 58 : 8),
+          paddingBottom: isMyBidTurn ? 'clamp(130px, 25vh, 210px)' : (phase === 'playing' ? 58 : 6),
         }}>
 
           {/* Hand */}
@@ -286,6 +301,15 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
             onPlayCard={(card, meta = {}) => {
               animateCardToTable(card, meta.sourceRect);
               setCardSubmitted(true);
+              lastPlayedCardRef.current = card;
+              if (cardSubmitTimerRef.current) clearTimeout(cardSubmitTimerRef.current);
+              cardSubmitTimerRef.current = setTimeout(() => {
+                // Auto-retry once if no server confirmation after 5s
+                if (lastPlayedCardRef.current) {
+                  emit('play_card', { roomCode, card: lastPlayedCardRef.current });
+                }
+                setCardSubmitted(false);
+              }, 5000);
               emit('play_card', { roomCode, card });
             }}
             isMyTurn={isMyTurn}
@@ -361,25 +385,25 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
         </div>
       )}
 
-      {/* Waiting for player to play */}
-      {phase === 'playing' && !isMyTurn && currentPlayer && (
+      {/* Playing phase status bar */}
+      {phase === 'playing' && (
         <div style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
           padding: '12px',
-          background: 'rgba(7,20,38,0.94)',
-          borderTop: '1px solid rgba(255,224,138,0.22)',
+          background: isMyTurn ? 'rgba(12,52,28,0.96)' : 'rgba(7,20,38,0.94)',
+          borderTop: isMyTurn ? '1px solid rgba(110,231,183,0.35)' : '1px solid rgba(255,224,138,0.22)',
           textAlign: 'center',
           fontSize: '0.86rem',
           fontWeight: 700,
-          color: '#C8BA9D',
+          color: isMyTurn ? '#6EE7B7' : '#C8BA9D',
           boxShadow: '0 -12px 30px rgba(0,0,0,0.35)',
           backdropFilter: 'blur(12px)',
           zIndex: 190,
         }}>
-          Waiting for {currentPlayer.name || 'player'} to play...
+          {isMyTurn ? 'Your turn to play!' : `Waiting for your turn...`}
         </div>
       )}
 
