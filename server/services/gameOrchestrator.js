@@ -128,6 +128,13 @@ class GameOrchestrator {
       return;
     }
 
+    // Immediately reset trick state on the server so any card played during
+    // the 1500ms display window starts a fresh trick rather than appending
+    // to the completed one. Client display is driven by its own displayTrick
+    // state and is unaffected by this early clear.
+    room.game.currentTrick = [];
+    room.game.leadSuit = null;
+
     this.clearTrickAfterDelay(roomCode, result);
   }
 
@@ -172,9 +179,6 @@ class GameOrchestrator {
     setTimeout(() => {
       const room = this.roomStore.getRoom(roomCode);
       if (!room?.game || room.status !== 'playing') return;
-
-      room.game.currentTrick = [];
-      room.game.leadSuit = null;
 
       this.io.to(roomCode).emit('trick_complete', {
         winnerId: result.winnerId,
