@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function BidPanel({ cardsThisRound, onBid, forbiddenBid, trumpSuit, currentRound }) {
+export default function BidPanel({ cardsThisRound, onBid, forbiddenBid }) {
   const [selected, setSelected] = useState(null);
 
   const bids = Array.from({ length: cardsThisRound + 1 }, (_, i) => i);
@@ -24,7 +24,7 @@ export default function BidPanel({ cardsThisRound, onBid, forbiddenBid, trumpSui
       backdropFilter: 'blur(14px)',
     }}>
       <div style={{ textAlign: 'center', fontSize: '0.78rem', color: '#C8BA9D', marginBottom: 'clamp(8px, 1.4vh, 14px)', fontWeight: 700 }}>
-        Round {currentRound} · {cardsThisRound} trick{cardsThisRound !== 1 ? 's' : ''} · Place your bid
+        {cardsThisRound} trick{cardsThisRound !== 1 ? 's' : ''} · Place your bid
       </div>
 
       <div style={{
