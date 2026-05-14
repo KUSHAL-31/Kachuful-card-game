@@ -79,33 +79,33 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      padding: isMobile ? 'clamp(10px, 2vh, 16px) 14px 78px' : '24px 24px 82px',
+      justifyContent: isMobile ? 'center' : 'flex-start',
+      padding: isMobile ? '0 14px 78px' : '24px 24px 82px',
       position: 'relative',
       overflowX: 'hidden',
       overflowY: 'hidden',
     }}>
+      {/* Title — absolute on mobile (doesn't affect centering), normal flow on desktop */}
       <div style={{
-        fontFamily: 'Playfair Display, serif',
-        fontSize: isMobile ? 'clamp(1.6rem, 4vh, 2.1rem)' : '2.5rem',
-        color: '#FFE08A',
-        textShadow: '0 4px 18px rgba(0,0,0,0.55), 0 0 18px rgba(214,168,79,0.28)',
-        marginTop: isMobile ? 0 : 8,
-        marginBottom: isMobile ? 'clamp(2px, 0.5vh, 4px)' : 4,
+        ...(isMobile ? { position: 'absolute', top: 'clamp(10px, 2vh, 18px)', left: 0, right: 0, pointerEvents: 'none' } : { marginTop: 8, marginBottom: 30, flexShrink: 0 }),
         textAlign: 'center',
-        flexShrink: 0,
       }}>
-        Kachuful
-      </div>
-      <div style={{
-        fontSize: isMobile ? '0.82rem' : '0.95rem',
-        color: '#D8C7A7',
-        marginBottom: isMobile ? 'clamp(8px, 1.6vh, 14px)' : 30,
-        textAlign: 'center',
-        fontWeight: 700,
-        flexShrink: 0,
-      }}>
-        Waiting for players...
+        <div style={{
+          fontFamily: 'Playfair Display, serif',
+          fontSize: isMobile ? 'clamp(1.6rem, 4vh, 2.1rem)' : '2.5rem',
+          color: '#FFE08A',
+          textShadow: '0 4px 18px rgba(0,0,0,0.55), 0 0 18px rgba(214,168,79,0.28)',
+          marginBottom: 4,
+        }}>
+          Kachuful
+        </div>
+        <div style={{
+          fontSize: isMobile ? '0.82rem' : '0.95rem',
+          color: '#D8C7A7',
+          fontWeight: 700,
+        }}>
+          Waiting for players...
+        </div>
       </div>
 
       <div className="glass-panel" style={{
@@ -134,7 +134,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
           }}>
             {room?.roomCode}
           </div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: isMobile ? 6 : 8 }}>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: isMobile ? 12 : 14 }}>
             <button
               onClick={copyCode}
               style={{
@@ -193,14 +193,14 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
           <div style={{
             fontSize: '0.7rem',
             color: '#C8BA9D',
-            textAlign: 'center',
+            textAlign: 'left',
             padding: isMobile ? '4px 8px' : '6px 10px',
             marginBottom: isMobile ? 6 : 8,
             background: 'rgba(255,255,255,0.055)',
             borderRadius: 6,
             lineHeight: 1.4,
           }}>
-            After sharing invite, return to this screen within 60s to keep the room active.
+            <strong>NOTE:</strong> After sharing invite, return to this screen within 60s to keep the room active.
           </div>
         )}
 
@@ -289,7 +289,6 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
             flex: 1,
             minHeight: 0,
             overflowY: 'auto',
-            paddingRight: 4,
             paddingBottom: 4,
             WebkitOverflowScrolling: 'touch',
           }}>
@@ -371,9 +370,6 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: isMobile ? '0.9rem' : '0.98rem', fontWeight: 800, color: '#F4F7FF' }}>
                     {botCount} bot opponent{botCount !== 1 ? 's' : ''} ready
-                  </div>
-                  <div style={{ fontSize: '0.68rem', color: '#C7D2FE', fontWeight: 700 }}>
-                    Names reveal when the game starts
                   </div>
                 </div>
                 <div style={{
