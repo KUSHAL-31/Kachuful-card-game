@@ -356,8 +356,6 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           cardsThisRound={cardsThisRound}
           onBid={(bid) => emit('place_bid', { roomCode, bid })}
           forbiddenBid={getForbiddenBid()}
-          trumpSuit={trumpSuit}
-          currentRound={currentRound}
         />
       )}
 
@@ -403,7 +401,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           backdropFilter: 'blur(12px)',
           zIndex: 190,
         }}>
-          {isMyTurn ? 'Your turn to play!' : `Waiting for your turn...`}
+          {isMyTurn ? 'Your turn to play!' : `Waiting for ${currentPlayer?.name || 'player'} to play...`}
         </div>
       )}
 
