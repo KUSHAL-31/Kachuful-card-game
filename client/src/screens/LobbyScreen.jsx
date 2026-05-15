@@ -125,7 +125,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
           <div style={{
             fontFamily: 'Playfair Display, serif',
             fontVariantNumeric: 'lining-nums',
-            fontSize: isMobile ? 'clamp(2rem, 5.5vh, 3rem)' : '3rem',
+            fontSize: isMobile ? 'clamp(1.6rem, 4.5vh, 2.4rem)' : '3rem',
             color: '#FFE08A',
             letterSpacing: '0.3em',
             fontWeight: 700,
@@ -504,7 +504,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
         border: '1px solid rgba(255,224,138,0.18)',
         boxShadow: '0 12px 26px rgba(0,0,0,0.18)',
         color: '#D8C7A7',
-        fontSize: '1rem',
+        fontSize: isMobile ? '0.82rem' : '1rem',
         fontWeight: 800,
         backdropFilter: 'blur(12px)',
         whiteSpace: isMobile ? 'normal' : 'nowrap',
