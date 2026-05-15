@@ -31,6 +31,7 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
 
     socket.on('join_room', safeHandler('join_room', socket.id, ({ roomCode, playerName, isCreating = false, token = null }) => {
       if (!roomCode || !playerName) {
+        logger.warn('JOIN_FAILED', { socketId: socket.id, reason: 'missing_room_code_or_player_name' });
         return socket.emit('error', { message: 'Room code and player name required' });
       }
 

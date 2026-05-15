@@ -181,16 +181,10 @@ class GameOrchestrator {
       const currentRoom = this.roomStore.getRoom(roomCode);
       if (!currentRoom?.game || currentRoom.status !== 'playing') return;
 
-      const roundScoreSnapshot = Object.entries(currentRoom.game.scores).map(([id, score]) => {
-        const p = currentRoom.game.players.find(pl => pl.id === id);
-        return { name: p?.name ?? id, score };
-      });
-
       logger.info('ROUND_OVER', {
         roomCode,
         round: currentRoom.game.currentRound,
         durationMs: currentRoom.game.roundStartedAt ? Date.now() - currentRoom.game.roundStartedAt : null,
-        scores: roundScoreSnapshot,
       });
 
       this.io.to(roomCode).emit('round_complete', {
@@ -205,7 +199,6 @@ class GameOrchestrator {
         logger.info('GAME_OVER', {
           roomCode,
           winners: winnerNames,
-          finalScores: roundScoreSnapshot,
           durationMs: currentRoom.game.startedAt ? Date.now() - currentRoom.game.startedAt : null,
         });
 

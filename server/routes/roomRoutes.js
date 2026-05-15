@@ -8,6 +8,7 @@ function createRoomRouter(roomStore) {
   router.post('/room/create', (req, res) => {
     const { playerName } = req.body;
     if (!playerName || !playerName.trim()) {
+      logger.warn('CREATE_ROOM_REJECTED', { reason: 'missing_player_name', ip: req.ip });
       return res.status(400).json({ error: 'Player name required' });
     }
     if (roomStore.getRoomCount() >= MAX_ROOMS) {
