@@ -8,9 +8,10 @@ import TrumpIndicator from '../components/TrumpIndicator';
 import ScoreTable from '../components/ScoreTable';
 import RoundSummaryModal from '../components/RoundSummaryModal';
 
-export default function GameScreen({ gameState, myHand, playerId, roomCode, emit }) {
+export default function GameScreen({ gameState, myHand, playerId, roomCode, isHost, emit }) {
   const [showScores, setShowScores] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [roundSummary, setRoundSummary] = useState(null);
   const [trickWinner, setTrickWinner] = useState(null);
   const [displayTrick, setDisplayTrick] = useState([]);
@@ -165,6 +166,23 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           Kachuful
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {isHost && (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 6,
+                background: 'rgba(220,38,38,0.15)',
+                border: '1px solid rgba(220,38,38,0.4)',
+                color: '#F87171',
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              End
+            </button>
+          )}
           <button
             onClick={() => { setShowRules(s => !s); setShowScores(false); }}
             style={{
@@ -422,6 +440,77 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, emit
           scores={roundSummary.scores}
           onNext={roundSummary.nextRound ? null : undefined}
         />
+      )}
+
+      {showDeleteConfirm && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 300,
+          background: 'rgba(0,0,0,0.65)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: 'rgba(10,20,40,0.98)',
+            border: '1px solid rgba(220,38,38,0.4)',
+            borderRadius: 14,
+            padding: '28px 24px 22px',
+            width: 'min(320px, 88vw)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+          }}>
+            <div style={{ fontSize: '1.5rem' }}>🛑</div>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.05rem', color: '#FFE08A', fontWeight: 700, textAlign: 'center' }}>
+              End the Game?
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#C8BA9D', textAlign: 'center', lineHeight: 1.55 }}>
+              This will immediately end the game for all players and delete the room.
+            </div>
+            <div style={{ display: 'flex', gap: 10, width: '100%', marginTop: 4 }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  borderRadius: 8,
+                  background: 'rgba(255,255,255,0.07)',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  color: '#C8BA9D',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  emit('delete_room', { roomCode });
+                  setShowDeleteConfirm(false);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  borderRadius: 8,
+                  background: 'rgba(220,38,38,0.85)',
+                  border: '1px solid rgba(220,38,38,0.6)',
+                  color: '#fff',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                End Game
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showRules && (

@@ -8,6 +8,17 @@ import ResultScreen from './screens/ResultScreen';
 
 const SOCKET_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
+const REJOIN_KEY = 'kachuful_session';
+function saveSession(roomCode, playerName, token) {
+  try { localStorage.setItem(REJOIN_KEY, JSON.stringify({ roomCode, playerName, token })); } catch {}
+}
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem(REJOIN_KEY)); } catch { return null; }
+}
+function clearSession() {
+  try { localStorage.removeItem(REJOIN_KEY); } catch {}
+}
+
 let socket = null;
 function getSocket() {
   if (!socket) {
@@ -22,7 +33,8 @@ function getSocket() {
 
 export default function App() {
   const hasInviteRoom = Boolean(new URLSearchParams(window.location.search).get('room'));
-  const [screen, setScreen] = useState(hasInviteRoom ? 'landing' : 'intro'); // intro | landing | lobby | game | result
+  const savedSession = loadSession();
+  const [screen, setScreen] = useState(hasInviteRoom ? 'landing' : savedSession ? 'landing' : 'intro'); // intro | landing | lobby | game | result
   const [room, setRoom] = useState(null);
   const [playerId, setPlayerId] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -30,8 +42,8 @@ export default function App() {
   const [myHand, setMyHand] = useState([]);
   const [gameResult, setGameResult] = useState(null);
 
-  const roomCodeRef = useRef(null);
-  const playerNameRef = useRef(null);
+  const roomCodeRef = useRef(savedSession?.roomCode || null);
+  const playerNameRef = useRef(savedSession?.playerName || null);
 
   const emit = useCallback((event, data) => {
     getSocket().emit(event, data);
@@ -41,21 +53,22 @@ export default function App() {
     const s = getSocket();
 
     s.on('connect', () => {
-      // Re-register with server after reconnect if we were in a room
-      if (roomCodeRef.current && playerNameRef.current) {
-        s.emit('join_room', {
-          roomCode: roomCodeRef.current,
-          playerName: playerNameRef.current,
-          isCreating: false,
-        });
+      // Re-register with server after reconnect using token if available
+      const session = loadSession();
+      const roomCode = roomCodeRef.current || session?.roomCode;
+      const playerName = playerNameRef.current || session?.playerName;
+      const token = session?.token;
+      if (roomCode && playerName) {
+        s.emit('join_room', { roomCode, playerName, isCreating: false, token });
       }
     });
 
-    s.on('room_joined', ({ room, playerId: pid, isHost: host }) => {
+    s.on('room_joined', ({ room, playerId: pid, isHost: host, token }) => {
       setRoom(room);
       setPlayerId(pid);
       setIsHost(host);
       roomCodeRef.current = room.roomCode;
+      if (token) saveSession(room.roomCode, playerNameRef.current, token);
       // Don't navigate to lobby if reconnecting mid-game; game_started will restore the game screen
       if (room.status !== 'playing') {
         setScreen('lobby');
@@ -187,6 +200,7 @@ export default function App() {
     });
 
     s.on('game_over', ({ scores, roundHistory, winners, players, reason }) => {
+      clearSession();
       setGameResult({ scores, roundHistory, winners, players, reason });
       setScreen('result');
     });
@@ -217,6 +231,13 @@ export default function App() {
 
     s.on('error', ({ message }) => {
       console.error('Game error:', message);
+      // If rejoin failed (room gone), clear stale session and drop to landing
+      if (loadSession() && !roomCodeRef.current) {
+        clearSession();
+        roomCodeRef.current = null;
+        playerNameRef.current = null;
+        setScreen('landing');
+      }
       showToast(message, 'error');
       // Let GameScreen know a play was rejected so it can release the card lock
       window.dispatchEvent(new CustomEvent('game-play-rejected'));
@@ -250,7 +271,9 @@ export default function App() {
   const handleJoined = ({ roomCode, playerName, isCreating }) => {
     playerNameRef.current = playerName;
     roomCodeRef.current = roomCode;
-    getSocket().emit('join_room', { roomCode, playerName, isCreating });
+    const session = loadSession();
+    const token = session?.roomCode === roomCode ? session?.token : null;
+    getSocket().emit('join_room', { roomCode, playerName, isCreating, token });
   };
 
   const handleStart = () => {
@@ -265,6 +288,9 @@ export default function App() {
     if (roomCodeRef.current) {
       emit('leave_room', { roomCode: roomCodeRef.current });
     }
+    clearSession();
+    roomCodeRef.current = null;
+    playerNameRef.current = null;
     setRoom(null);
     setPlayerId(null);
     setGameState(null);
@@ -305,6 +331,7 @@ export default function App() {
           myHand={myHand}
           playerId={playerId}
           roomCode={roomCodeRef.current}
+          isHost={isHost}
           emit={emit}
         />
       )}
