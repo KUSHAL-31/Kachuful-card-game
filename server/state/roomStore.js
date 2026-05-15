@@ -1,3 +1,4 @@
+const { randomUUID } = require('crypto');
 const {
   MAX_PLAYERS,
   MAX_ROOMS,
@@ -40,6 +41,7 @@ function createRoom(hostId, hostName, customCode) {
       name: hostName,
       seatIndex: 0,
       isConnected: true,
+      token: randomUUID(),
     }],
     status: 'lobby',
     game: null,
@@ -50,14 +52,24 @@ function createRoom(hostId, hostName, customCode) {
   return room;
 }
 
-function joinRoom(roomCode, playerId, playerName) {
+function joinRoom(roomCode, playerId, playerName, token) {
   const room = rooms.get(roomCode.toUpperCase());
   if (!room) return { error: 'Room not found' };
 
+  // Token-based rejoin (most reliable — works even mid-game)
+  if (token) {
+    const tokenIndex = room.players.findIndex(p => p.token === token);
+    if (tokenIndex !== -1) {
+      const { oldId } = reconnectPlayer(room, tokenIndex, playerId);
+      return { room, player: room.players[tokenIndex], rejoined: true, oldId, token };
+    }
+  }
+
+  // Name-based fallback for disconnected players
   const existingIndex = room.players.findIndex(player => player.name === playerName && !player.isConnected);
   if (existingIndex !== -1) {
     const { oldId } = reconnectPlayer(room, existingIndex, playerId);
-    return { room, player: room.players[existingIndex], rejoined: true, oldId };
+    return { room, player: room.players[existingIndex], rejoined: true, oldId, token: room.players[existingIndex].token };
   }
 
   if (room.status === 'playing') {
@@ -65,22 +77,24 @@ function joinRoom(roomCode, playerId, playerName) {
     const connectedIndex = room.players.findIndex(player => player.name === playerName && player.isConnected);
     if (connectedIndex !== -1) {
       const { oldId } = reconnectPlayer(room, connectedIndex, playerId);
-      return { room, player: room.players[connectedIndex], rejoined: true, oldId };
+      return { room, player: room.players[connectedIndex], rejoined: true, oldId, token: room.players[connectedIndex].token };
     }
     return { error: 'Game already in progress' };
   }
   if (room.players.length >= MAX_PLAYERS) return { error: 'Room is full' };
 
+  const newToken = randomUUID();
   const player = {
     id: playerId,
     name: playerName,
     seatIndex: room.players.length,
     isConnected: true,
+    token: newToken,
   };
 
   room.players.push(player);
   touchRoom(room);
-  return { room, player };
+  return { room, player, token: newToken };
 }
 
 function setBotCount(roomCode, count) {

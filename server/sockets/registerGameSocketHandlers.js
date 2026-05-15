@@ -11,13 +11,13 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
-    socket.on('join_room', ({ roomCode, playerName, isCreating = false }) => {
+    socket.on('join_room', ({ roomCode, playerName, isCreating = false, token = null }) => {
       if (!roomCode || !playerName) {
         return socket.emit('error', { message: 'Room code and player name required' });
       }
 
       const code = roomCode.toUpperCase().trim();
-      const result = joinOrCreateRoom({ roomStore, code, socketId: socket.id, playerName, isCreating });
+      const result = joinOrCreateRoom({ roomStore, code, socketId: socket.id, playerName, isCreating, token });
       if (result.error) return socket.emit('error', { message: result.error });
 
       const { room } = result;
@@ -28,6 +28,7 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
         room: sanitizeRoom(room),
         playerId: socket.id,
         isHost: room.hostId === socket.id,
+        token: result.token,
       });
 
       socket.to(code).emit('room_updated', {
@@ -92,6 +93,21 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
       if (result.error) return socket.emit('error', { message: result.error });
     });
 
+    socket.on('delete_room', ({ roomCode }) => {
+      const room = roomStore.getRoom(roomCode);
+      if (!room) return socket.emit('error', { message: 'Room not found' });
+      if (room.hostId !== socket.id) return socket.emit('error', { message: 'Only host can delete the room' });
+
+      io.to(roomCode).emit('game_over', {
+        scores: room.game?.scores || {},
+        roundHistory: room.game?.roundHistory || [],
+        winners: [],
+        players: room.game?.players || room.players || [],
+        reason: 'Host ended the game',
+      });
+      roomStore.deleteRoom(roomCode);
+    });
+
     socket.on('restart_game', ({ roomCode }) => {
       const room = roomStore.getRoom(roomCode);
       if (!room) return socket.emit('error', { message: 'Room not found' });
@@ -121,19 +137,21 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
   });
 }
 
-function joinOrCreateRoom({ roomStore, code, socketId, playerName, isCreating }) {
+function joinOrCreateRoom({ roomStore, code, socketId, playerName, isCreating, token }) {
   if (!roomStore.roomExists(code)) {
     if (!isCreating) {
       return { error: 'Room not found. Ask the host to create a new room.' };
     }
     const created = roomStore.createRoom(socketId, playerName.trim(), code);
     if (created.error) return created;
-    return { room: created };
+    // token for the host is on their player object
+    const hostToken = created.players[0].token;
+    return { room: created, token: hostToken };
   }
 
-  const result = roomStore.joinRoom(code, socketId, playerName.trim());
+  const result = roomStore.joinRoom(code, socketId, playerName.trim(), token);
   if (result.error) return result;
-  return { room: result.room, rejoined: result.rejoined, oldId: result.oldId };
+  return { room: result.room, rejoined: result.rejoined, oldId: result.oldId, token: result.token };
 }
 
 function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, roomCode, explicit }) {
