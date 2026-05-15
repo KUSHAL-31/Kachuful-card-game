@@ -6,6 +6,7 @@ const {
 const { initGame, startRound, placeBid, playCard, getWinners } = require('../gameEngine');
 const { chooseBotBid, chooseBotCard } = require('../botEngine');
 const { getPublicGameState } = require('../serializers/gameSerializer');
+const logger = require('../utils/logger');
 
 class GameOrchestrator {
   constructor({ io, roomStore }) {
@@ -25,6 +26,14 @@ class GameOrchestrator {
       isConnected: player.isConnected !== false,
     })));
     room.game = startRound(room.game);
+    room.game.startedAt = Date.now();
+
+    logger.info('GAME_STARTED', {
+      roomCode,
+      players: room.game.players.filter(p => !p.isBot).map(p => p.name),
+      bots: room.game.players.filter(p => p.isBot).map(p => p.name),
+      totalRounds: room.game.totalRounds,
+    });
 
     this.emitRoundStart(roomCode, room);
   }
@@ -49,6 +58,16 @@ class GameOrchestrator {
   }
 
   emitRoundStart(roomCode, room) {
+    room.game.roundStartedAt = Date.now();
+
+    logger.info('ROUND_STARTED', {
+      roomCode,
+      round: room.game.currentRound,
+      totalRounds: room.game.totalRounds,
+      cardsThisRound: room.game.cardsThisRound,
+      trumpSuit: room.game.trumpSuit,
+    });
+
     this.io.to(roomCode).emit('game_started', { gameState: getPublicGameState(room.game) });
 
     room.game.players.forEach(player => {
@@ -95,7 +114,23 @@ class GameOrchestrator {
       biddingComplete: result.biddingComplete,
     });
 
+    if (result.forbiddenBid !== null && result.forbiddenBid !== undefined) {
+      const compulsoryPlayer = room.game.players[room.game.compulsoryPlayerIndex];
+      logger.info('FORBIDDEN_BID_SET', {
+        roomCode,
+        round: room.game.currentRound,
+        forbiddenBid: result.forbiddenBid,
+        compulsoryPlayer: compulsoryPlayer?.name,
+      });
+    }
+
     if (result.biddingComplete) {
+      const bidSummary = Object.entries(room.game.bids).map(([id, b]) => ({
+        name: room.game.players.find(p => p.id === id)?.name ?? id,
+        bid: b,
+      }));
+      logger.info('BIDDING_COMPLETE', { roomCode, round: room.game.currentRound, bids: bidSummary });
+
       const firstPlayerId = room.game.players[room.game.trickLeaderIndex].id;
       this.io.to(roomCode).emit('playing_start', {
         bids: room.game.bids,
@@ -146,6 +181,12 @@ class GameOrchestrator {
       const currentRoom = this.roomStore.getRoom(roomCode);
       if (!currentRoom?.game || currentRoom.status !== 'playing') return;
 
+      logger.info('ROUND_OVER', {
+        roomCode,
+        round: currentRoom.game.currentRound,
+        durationMs: currentRoom.game.roundStartedAt ? Date.now() - currentRoom.game.roundStartedAt : null,
+      });
+
       this.io.to(roomCode).emit('round_complete', {
         roundResult: result.roundResult,
         scores: currentRoom.game.scores,
@@ -154,6 +195,13 @@ class GameOrchestrator {
       });
 
       if (result.isLastRound) {
+        const winnerNames = winners.map(id => currentRoom.game.players.find(p => p.id === id)?.name ?? id);
+        logger.info('GAME_OVER', {
+          roomCode,
+          winners: winnerNames,
+          durationMs: currentRoom.game.startedAt ? Date.now() - currentRoom.game.startedAt : null,
+        });
+
         currentRoom.status = 'finished';
         this.io.to(roomCode).emit('game_over', {
           scores: currentRoom.game.scores,
@@ -218,7 +266,7 @@ class GameOrchestrator {
       const bid = chooseBotBid(room.game, player.id);
       const result = placeBid(room.game, player.id, bid);
       if (result.error) {
-        console.error(`Bot bid failed for ${player.name}: ${result.error}`);
+        logger.error('BOT_BID_FAILED', { roomCode, botName: player.name, error: result.error });
         return;
       }
       this.applyBidResult(roomCode, room, player.id, bid, result);
@@ -234,7 +282,7 @@ class GameOrchestrator {
       const card = chooseBotCard(room.game, player.id);
       const result = playCard(room.game, player.id, card);
       if (result.error) {
-        console.error(`Bot play failed for ${player.name}: ${result.error}`);
+        logger.error('BOT_PLAY_FAILED', { roomCode, botName: player.name, error: result.error });
         return;
       }
       this.applyCardResult(roomCode, room, player.id, card, result);
@@ -246,7 +294,7 @@ class GameOrchestrator {
       const room = this.roomStore.getRoom(roomCode);
       if (room?.status === 'finished') {
         this.roomStore.deleteRoom(roomCode);
-        console.log(`Deleted finished room ${roomCode} after cleanup timeout`);
+        logger.info('ROOM_CLEANED_UP', { roomCode });
       }
     }, FINISHED_ROOM_CLEANUP_MS);
   }

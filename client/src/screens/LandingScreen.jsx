@@ -17,7 +17,6 @@ export default function LandingScreen({ onJoined }) {
   const [loading, setLoading] = useState(false);
   const isMobile = window.innerWidth < 768;
 
-  // Pre-fill room code and switch to join tab if ?room= is in the URL
   const params = new URLSearchParams(window.location.search);
   const prefilledCode = params.get('room')?.toUpperCase() || '';
   const [joinCode, setJoinCode] = useState(prefilledCode);
@@ -39,8 +38,8 @@ export default function LandingScreen({ onJoined }) {
       const data = await res.json();
       if (!res.ok) return setError(data.error || 'Failed to create room');
       onJoined({ roomCode: data.roomCode, playerName: name.trim(), isCreating: true });
-    } catch {
-      setError('Cannot connect to server');
+    } catch (e) {
+      setError('Cannot connect to server. Check your internet connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -57,8 +56,8 @@ export default function LandingScreen({ onJoined }) {
       const data = await res.json();
       if (!res.ok) return setError(data.error || 'Room not found');
       onJoined({ roomCode: code, playerName: name.trim(), isCreating: false });
-    } catch {
-      setError('Cannot connect to server');
+    } catch (e) {
+      setError('Cannot connect to server. Check your internet connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -71,7 +70,9 @@ export default function LandingScreen({ onJoined }) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '24px 24px 106px',
+      padding: isMobile
+        ? 'clamp(12px, 2vh, 24px) 16px clamp(72px, 13vh, 106px)'
+        : '24px 24px 106px',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -80,14 +81,14 @@ export default function LandingScreen({ onJoined }) {
         onClick={() => setShowRules(true)}
         style={{
           position: 'absolute',
-          top: 18,
-          right: 18,
+          top: isMobile ? 12 : 18,
+          right: isMobile ? 12 : 18,
           zIndex: 3,
-          padding: '9px 15px',
+          padding: isMobile ? '7px 12px' : '9px 15px',
           borderRadius: 999,
           background: 'rgba(7,20,38,0.62)',
           color: '#FFE08A',
-          fontSize: '0.9rem',
+          fontSize: isMobile ? '0.8rem' : '0.9rem',
           fontWeight: 900,
           border: '1px solid rgba(255,224,138,0.28)',
           boxShadow: '0 12px 26px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.08)',
@@ -99,10 +100,10 @@ export default function LandingScreen({ onJoined }) {
       </button>
 
       {/* Logo */}
-      <div style={{ textAlign: 'center', marginBottom: 34 }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 'clamp(12px, 2.5vh, 30px)' : 34 }}>
         <div style={{
           fontFamily: 'Playfair Display, serif',
-          fontSize: 'clamp(3rem, 8.5vw, 4.7rem)',
+          fontSize: isMobile ? 'clamp(2rem, 5.5vh, 3.4rem)' : 'clamp(3rem, 8.5vw, 4.7rem)',
           color: '#FFE08A',
           lineHeight: 1,
           textShadow: '0 4px 18px rgba(0,0,0,0.55), 0 0 22px rgba(214,168,79,0.32)',
@@ -111,24 +112,24 @@ export default function LandingScreen({ onJoined }) {
         </div>
         <div style={{
           fontFamily: 'Playfair Display, serif',
-          fontSize: 'clamp(1rem, 4vw, 1.4rem)',
+          fontSize: isMobile ? 'clamp(0.8rem, 2.5vh, 1.2rem)' : 'clamp(1rem, 4vw, 1.4rem)',
           color: '#D8C7A7',
-          marginTop: 6,
+          marginTop: isMobile ? 4 : 6,
         }}>
           काचूफूल
         </div>
         <div style={{
-          marginTop: 10,
+          marginTop: isMobile ? 6 : 10,
           display: 'flex',
           gap: 8,
           justifyContent: 'center',
-          fontSize: '1.5rem',
+          fontSize: isMobile ? 'clamp(1rem, 3.5vh, 1.4rem)' : '1.5rem',
           color: '#FFE08A',
           opacity: 0.82,
         }}>
-          ♠ ♦ ♣ ♥
+          {'♠︎'} {'♦︎'} {'♣︎'} {'♥︎'}
         </div>
-        <div style={{ marginTop: 10, fontSize: '0.9rem', color: '#D8C7A7', fontWeight: 700 }}>
+        <div style={{ marginTop: isMobile ? 5 : 10, fontSize: 'clamp(0.7rem, 2.2vw, 0.9rem)', color: '#D8C7A7', fontWeight: 700 }}>
           Sharp minds, risky moves & lucky cards · 2–10 players
         </div>
       </div>
@@ -137,7 +138,7 @@ export default function LandingScreen({ onJoined }) {
       <div className="glass-panel" style={{
         width: 'min(440px, 100%)',
         borderRadius: 16,
-        padding: '30px 26px',
+        padding: isMobile ? 'clamp(14px, 2.5vh, 24px) clamp(14px, 4vw, 24px)' : '30px 26px',
       }}>
         {/* Slider toggle */}
         <div style={{
@@ -147,9 +148,8 @@ export default function LandingScreen({ onJoined }) {
           border: '1px solid rgba(255,255,255,0.10)',
           borderRadius: 10,
           padding: 4,
-          marginBottom: 20,
+          marginBottom: isMobile ? 'clamp(12px, 2vh, 18px)' : 20,
         }}>
-          {/* Sliding pill */}
           <div style={{
             position: 'absolute',
             top: 4,
@@ -168,9 +168,9 @@ export default function LandingScreen({ onJoined }) {
               onClick={() => { setTab(t); setError(''); }}
               style={{
                 flex: 1,
-                padding: '10px 0',
+                padding: isMobile ? 'clamp(7px, 1.2vh, 10px) 0' : '10px 0',
                 borderRadius: 7,
-                fontSize: '0.92rem',
+                fontSize: isMobile ? '0.86rem' : '0.92rem',
                 fontWeight: 800,
                 background: 'transparent',
                 color: tab === t ? '#091626' : '#C8BA9D',
@@ -187,8 +187,15 @@ export default function LandingScreen({ onJoined }) {
         </div>
 
         {/* Name input */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: '0.82rem', color: '#C8BA9D', marginBottom: 7, fontWeight: 800, letterSpacing: '0.08em' }}>
+        <div style={{ marginBottom: isMobile ? 'clamp(10px, 1.8vh, 18px)' : 20 }}>
+          <label style={{
+            display: 'block',
+            fontSize: isMobile ? '0.74rem' : '0.82rem',
+            color: '#C8BA9D',
+            marginBottom: isMobile ? 5 : 7,
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+          }}>
             YOUR NAME
           </label>
           <input
@@ -200,20 +207,27 @@ export default function LandingScreen({ onJoined }) {
             onKeyDown={e => e.key === 'Enter' && (tab === 'create' ? handleCreate() : handleJoin())}
             style={{
               width: '100%',
-              padding: '13px 15px',
+              padding: isMobile ? 'clamp(9px, 1.6vh, 12px) 12px' : '13px 15px',
               borderRadius: 8,
               background: 'rgba(255,255,255,0.075)',
               border: '1px solid rgba(255,255,255,0.18)',
               color: '#FFF6E6',
-              fontSize: '1.06rem',
+              fontSize: isMobile ? '0.94rem' : '1.06rem',
               boxShadow: 'inset 0 1px 8px rgba(0,0,0,0.18)',
             }}
           />
         </div>
 
         {tab === 'join' && (
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: '0.82rem', color: '#C8BA9D', marginBottom: 7, fontWeight: 800, letterSpacing: '0.08em' }}>
+          <div style={{ marginBottom: isMobile ? 'clamp(10px, 1.8vh, 18px)' : 20 }}>
+            <label style={{
+              display: 'block',
+              fontSize: isMobile ? '0.74rem' : '0.82rem',
+              color: '#C8BA9D',
+              marginBottom: isMobile ? 5 : 7,
+              fontWeight: 800,
+              letterSpacing: '0.08em',
+            }}>
               ROOM CODE
             </label>
             <input
@@ -225,12 +239,12 @@ export default function LandingScreen({ onJoined }) {
               onKeyDown={e => e.key === 'Enter' && handleJoin()}
               style={{
                 width: '100%',
-                padding: '13px 15px',
+                padding: isMobile ? 'clamp(9px, 1.6vh, 12px) 12px' : '13px 15px',
                 borderRadius: 8,
                 background: 'rgba(255,255,255,0.075)',
                 border: '1px solid rgba(255,255,255,0.18)',
                 color: '#FFF6E6',
-                fontSize: '1.06rem',
+                fontSize: isMobile ? '0.94rem' : '1.06rem',
                 letterSpacing: '0.2em',
                 fontWeight: 700,
                 textAlign: 'center',
@@ -241,13 +255,13 @@ export default function LandingScreen({ onJoined }) {
 
         {error && (
           <div style={{
-            marginBottom: 16,
-            padding: '8px 12px',
+            marginBottom: isMobile ? 10 : 16,
+            padding: isMobile ? '6px 10px' : '8px 12px',
             borderRadius: 6,
             background: 'rgba(239,68,68,0.15)',
             border: '1px solid rgba(239,68,68,0.3)',
             color: '#EF4444',
-            fontSize: '0.86rem',
+            fontSize: isMobile ? '0.8rem' : '0.86rem',
           }}>
             {error}
           </div>
@@ -258,12 +272,12 @@ export default function LandingScreen({ onJoined }) {
           disabled={loading}
           style={{
             width: '100%',
-            padding: '15px',
+            padding: isMobile ? 'clamp(10px, 1.8vh, 14px)' : '15px',
             borderRadius: 8,
             background: loading ? 'rgba(214,168,79,0.35)' : 'linear-gradient(180deg, #FFE08A, #D6A84F 58%, #AD7B2F)',
             color: '#091626',
             fontWeight: 700,
-            fontSize: '1.08rem',
+            fontSize: isMobile ? '0.96rem' : '1.08rem',
             cursor: loading ? 'not-allowed' : 'pointer',
             border: '1px solid rgba(255,224,138,0.68)',
             transition: 'all 0.2s',
@@ -315,16 +329,16 @@ export default function LandingScreen({ onJoined }) {
         width: isMobile ? 'calc(100vw - 32px)' : 'auto',
         maxWidth: '480px',
         textAlign: 'center',
-        padding: isMobile ? '10px 14px' : '11px 18px',
+        padding: isMobile ? '8px 14px' : '11px 18px',
         background: 'rgba(7,20,38,0.48)',
         borderRadius: 999,
         border: '1px solid rgba(255,224,138,0.18)',
         boxShadow: '0 12px 26px rgba(0,0,0,0.18)',
         color: '#D8C7A7',
-        fontSize: '1rem',
+        fontSize: isMobile ? '0.82rem' : '1rem',
         fontWeight: 800,
         backdropFilter: 'blur(12px)',
-        whiteSpace: isMobile ? 'normal' : 'nowrap',
+        whiteSpace: 'nowrap',
       }}>
         Developed by <span style={{ color: '#FFF6E6' }}>Kushal Soni</span>
         <span style={{ color: '#FFE08A', margin: '0 8px' }}>·</span>
