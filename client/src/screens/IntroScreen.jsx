@@ -165,7 +165,7 @@ export default function IntroScreen({ onPlay }) {
         background: 'rgba(7,20,38,0.48)',
         border: '1px solid rgba(255,224,138,0.18)',
         color: '#D8C7A7',
-        fontSize: '1rem',
+        fontSize: isMobile ? '0.82rem' : '1rem',
         fontWeight: 800,
         boxShadow: '0 12px 26px rgba(0,0,0,0.18)',
         textAlign: 'center',
