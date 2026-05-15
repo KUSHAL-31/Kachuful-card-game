@@ -4,25 +4,68 @@ const {
 } = require('../config/appConfig');
 const { serializePlayers, sanitizeRoom } = require('../serializers/playerSerializer');
 const { getPublicGameState } = require('../serializers/gameSerializer');
+const logger = require('../utils/logger');
+
+// Wraps a socket event handler so any unexpected throw is caught, logged, and
+// reported back to the client rather than crashing the process.
+function safeHandler(event, socketId, fn) {
+  return (...args) => {
+    try {
+      fn(...args);
+    } catch (err) {
+      logger.error('SOCKET_HANDLER_ERROR', {
+        event,
+        socketId,
+        error: err.message,
+        stack: err.stack,
+      });
+    }
+  };
+}
 
 function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
   const socketRoomMap = new Map();
 
   io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
+    logger.info('SOCKET_CONNECTED', { socketId: socket.id });
 
-    socket.on('join_room', ({ roomCode, playerName, isCreating = false, token = null }) => {
+    socket.on('join_room', safeHandler('join_room', socket.id, ({ roomCode, playerName, isCreating = false, token = null }) => {
       if (!roomCode || !playerName) {
+        logger.warn('JOIN_FAILED', { socketId: socket.id, reason: 'missing_room_code_or_player_name' });
         return socket.emit('error', { message: 'Room code and player name required' });
       }
 
       const code = roomCode.toUpperCase().trim();
       const result = joinOrCreateRoom({ roomStore, code, socketId: socket.id, playerName, isCreating, token });
-      if (result.error) return socket.emit('error', { message: result.error });
+      if (result.error) {
+        logger.warn('JOIN_FAILED', { roomCode: code, playerName: playerName.trim(), error: result.error });
+        return socket.emit('error', { message: result.error });
+      }
 
       const { room } = result;
       socket.join(code);
       socketRoomMap.set(socket.id, code);
+
+      const humanPlayers = room.players.filter(p => !p.isBot);
+      const botPlayers = room.players.filter(p => p.isBot);
+      if (result.rejoined) {
+        logger.info('PLAYER_REJOINED', {
+          roomCode: code,
+          playerName: playerName.trim(),
+          playerId: socket.id,
+          players: humanPlayers.map(p => p.name),
+          botCount: botPlayers.length,
+        });
+      } else {
+        logger.info('PLAYER_JOINED', {
+          roomCode: code,
+          playerName: playerName.trim(),
+          playerId: socket.id,
+          isHost: room.hostId === socket.id,
+          players: humanPlayers.map(p => p.name),
+          botCount: botPlayers.length,
+        });
+      }
 
       socket.emit('room_joined', {
         room: sanitizeRoom(room),
@@ -48,9 +91,9 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
           });
         }
       }
-    });
+    }));
 
-    socket.on('set_bots', ({ roomCode, count }) => {
+    socket.on('set_bots', safeHandler('set_bots', socket.id, ({ roomCode, count }) => {
       const room = roomStore.getRoom(roomCode);
       if (!room) return socket.emit('error', { message: 'Room not found' });
       if (room.hostId !== socket.id) return socket.emit('error', { message: 'Only host can change bots' });
@@ -59,44 +102,74 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
       const result = roomStore.setBotCount(roomCode, Number(count) || 0);
       if (result.error) return socket.emit('error', { message: result.error });
 
+      logger.info('BOTS_SET', {
+        roomCode,
+        botCount: Number(count) || 0,
+        setBy: room.players.find(p => p.id === socket.id)?.name,
+      });
+
       io.to(roomCode).emit('room_updated', {
         players: serializePlayers(result.room.players),
         status: result.room.status,
       });
-    });
+    }));
 
-    socket.on('start_game', ({ roomCode }) => {
+    socket.on('start_game', safeHandler('start_game', socket.id, ({ roomCode }) => {
       const room = roomStore.getRoom(roomCode);
       if (!room) return socket.emit('error', { message: 'Room not found' });
       if (room.hostId !== socket.id) return socket.emit('error', { message: 'Only host can start' });
       if (room.players.length < 2) return socket.emit('error', { message: 'Need at least 2 players' });
       if (room.status === 'playing') return socket.emit('error', { message: 'Game already started' });
 
-      gameOrchestrator.startGame(roomCode);
-    });
+      const humanNames = room.players.filter(p => !p.isBot).map(p => p.name);
+      const botCount = room.players.filter(p => p.isBot).length;
+      logger.info('GAME_STARTING', {
+        roomCode,
+        players: humanNames,
+        botCount,
+        totalPlayers: room.players.length,
+        startedBy: room.players.find(p => p.id === socket.id)?.name,
+      });
 
-    socket.on('place_bid', ({ roomCode, bid }) => {
+      gameOrchestrator.startGame(roomCode);
+    }));
+
+    socket.on('place_bid', safeHandler('place_bid', socket.id, ({ roomCode, bid }) => {
       const room = roomStore.getRoom(roomCode);
       if (!room?.game) return socket.emit('error', { message: 'Game not found' });
       if (room.game.phase !== 'bidding') return socket.emit('error', { message: 'Not bidding phase' });
 
       const result = gameOrchestrator.handleBid(roomCode, socket.id, bid);
-      if (result.error) return socket.emit('error', { message: result.error });
-    });
+      if (result.error) {
+        const playerName = room.game.players.find(p => p.id === socket.id)?.name;
+        logger.warn('INVALID_BID', { roomCode, playerName, bid, error: result.error });
+        return socket.emit('error', { message: result.error });
+      }
+    }));
 
-    socket.on('play_card', ({ roomCode, card }) => {
+    socket.on('play_card', safeHandler('play_card', socket.id, ({ roomCode, card }) => {
       const room = roomStore.getRoom(roomCode);
       if (!room?.game) return socket.emit('error', { message: 'Game not found' });
       if (room.game.phase !== 'playing') return socket.emit('error', { message: 'Not playing phase' });
 
       const result = gameOrchestrator.handleCard(roomCode, socket.id, card);
-      if (result.error) return socket.emit('error', { message: result.error });
-    });
+      if (result.error) {
+        const playerName = room.game.players.find(p => p.id === socket.id)?.name;
+        logger.warn('INVALID_CARD', { roomCode, playerName, card, error: result.error });
+        return socket.emit('error', { message: result.error });
+      }
+    }));
 
-    socket.on('delete_room', ({ roomCode }) => {
+    socket.on('delete_room', safeHandler('delete_room', socket.id, ({ roomCode }) => {
       const room = roomStore.getRoom(roomCode);
       if (!room) return socket.emit('error', { message: 'Room not found' });
       if (room.hostId !== socket.id) return socket.emit('error', { message: 'Only host can delete the room' });
+
+      logger.info('ROOM_DELETED_BY_HOST', {
+        roomCode,
+        hostName: room.players.find(p => p.id === socket.id)?.name,
+        gameStatus: room.status,
+      });
 
       io.to(roomCode).emit('game_over', {
         scores: room.game?.scores || {},
@@ -106,12 +179,18 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
         reason: 'Host ended the game',
       });
       roomStore.deleteRoom(roomCode);
-    });
+    }));
 
-    socket.on('restart_game', ({ roomCode }) => {
+    socket.on('restart_game', safeHandler('restart_game', socket.id, ({ roomCode }) => {
       const room = roomStore.getRoom(roomCode);
       if (!room) return socket.emit('error', { message: 'Room not found' });
       if (room.hostId !== socket.id) return socket.emit('error', { message: 'Only host can restart' });
+
+      logger.info('PLAY_AGAIN', {
+        roomCode,
+        requestedBy: room.players.find(p => p.id === socket.id)?.name,
+        players: room.players.filter(p => !p.isBot).map(p => p.name),
+      });
 
       room.status = 'lobby';
       room.game = null;
@@ -121,19 +200,19 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
         players: serializePlayers(room.players),
         status: 'lobby',
       });
-    });
+    }));
 
-    socket.on('leave_room', ({ roomCode }) => {
+    socket.on('leave_room', safeHandler('leave_room', socket.id, ({ roomCode }) => {
       handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, roomCode, explicit: true });
-    });
+    }));
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', safeHandler('disconnect', socket.id, () => {
       const roomCode = socketRoomMap.get(socket.id);
       if (roomCode) {
         handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, roomCode, explicit: false });
       }
-      console.log('Client disconnected:', socket.id);
-    });
+      logger.info('SOCKET_DISCONNECTED', { socketId: socket.id, roomCode: roomCode || null });
+    }));
   });
 }
 
@@ -164,17 +243,43 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
   if (!player) return;
 
   if (explicit) {
+    logger.info('PLAYER_LEFT', {
+      roomCode,
+      playerName: player.name,
+      playerId: socket.id,
+      gameStatus: room.status,
+      remainingPlayers: room.players.filter(p => p.id !== socket.id && !p.isBot).map(p => p.name),
+    });
+
+    const hostBefore = room.hostId;
     roomStore.removePlayer(roomCode, socket.id);
     socket.leave(roomCode);
     if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;
 
+    const updatedRoom = roomStore.getRoom(roomCode);
+    if (updatedRoom && updatedRoom.hostId !== hostBefore) {
+      const newHost = updatedRoom.players.find(p => p.id === updatedRoom.hostId);
+      logger.info('HOST_TRANSFERRED', {
+        roomCode,
+        fromName: player.name,
+        toName: newHost?.name,
+        reason: 'player_left',
+      });
+    }
+
     io.to(roomCode).emit('room_updated', {
-      players: serializePlayers(roomStore.getRoom(roomCode)?.players || []),
+      players: serializePlayers(updatedRoom?.players || []),
     });
     return;
   }
 
   if (room.status === 'lobby') {
+    logger.warn('PLAYER_DISCONNECTED_LOBBY', {
+      roomCode,
+      playerName: player.name,
+      playerId: socket.id,
+    });
+
     roomStore.markDisconnected(roomCode, socket.id);
     scheduleDeleteIfNoConnectedHumans({ roomStore, roomCode, delayMs: LOBBY_DISCONNECT_GRACE_MS });
 
@@ -185,8 +290,26 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
     return;
   }
 
+  logger.warn('PLAYER_DISCONNECTED_INGAME', {
+    roomCode,
+    playerName: player.name,
+    playerId: socket.id,
+    round: room.game?.currentRound ?? null,
+  });
+
+  const hostBefore = room.hostId;
   roomStore.markDisconnected(roomCode, socket.id);
   scheduleDeleteIfNoConnectedHumans({ roomStore, roomCode, delayMs: ACTIVE_DISCONNECT_GRACE_MS });
+
+  if (room.hostId !== hostBefore) {
+    const newHost = room.players.find(p => p.id === room.hostId);
+    logger.info('HOST_TRANSFERRED', {
+      roomCode,
+      fromName: player.name,
+      toName: newHost?.name,
+      reason: 'player_disconnected',
+    });
+  }
 
   io.to(roomCode).emit('player_disconnected', {
     playerId: socket.id,
@@ -195,6 +318,13 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
   });
   const connectedParticipantCount = room.players.filter(p => p.isConnected).length;
   if (connectedParticipantCount <= 1 && room.status === 'playing') {
+    logger.warn('GAME_ABORTED', {
+      roomCode,
+      reason: 'Not enough players connected',
+      round: room.game?.currentRound ?? null,
+      durationMs: room.game?.startedAt ? Date.now() - room.game.startedAt : null,
+    });
+
     room.status = 'finished';
     io.to(roomCode).emit('game_over', {
       scores: room.game?.scores || {},
@@ -214,6 +344,11 @@ function removeDisconnectedLobbyPlayer({ io, roomStore, roomCode, playerId }) {
 
   const player = room.players.find(p => p.id === playerId);
   if (!player || player.isConnected) return;
+
+  logger.info('PLAYER_REMOVED_AFTER_GRACE', {
+    roomCode,
+    playerName: player.name,
+  });
 
   roomStore.removePlayer(roomCode, playerId);
   if (roomStore.deleteRoomIfNoConnectedHumans(roomCode)) return;

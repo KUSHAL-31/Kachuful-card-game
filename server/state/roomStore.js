@@ -5,6 +5,7 @@ const {
   ROOM_CLEANUP_INTERVAL_MS,
   ROOM_EXPIRY_MS,
 } = require('../config/appConfig');
+const logger = require('../utils/logger');
 
 const rooms = new Map();
 const BOT_NAMES = [
@@ -230,6 +231,10 @@ function getRoomCount() {
   return rooms.size;
 }
 
+function getAllRooms() {
+  return Array.from(rooms.values());
+}
+
 function touchRoom(room) {
   room.lastActivity = Date.now();
 }
@@ -240,6 +245,10 @@ function cleanupInactiveRooms() {
     if (room.status === 'playing') continue;
     if (now - room.lastActivity >= ROOM_EXPIRY_MS) {
       rooms.delete(roomCode);
+      logger.info('ROOM_EXPIRED', {
+        roomCode,
+        players: room.players.filter(p => !p.isBot).map(p => p.name),
+      });
     }
   }
 }
@@ -271,6 +280,7 @@ module.exports = {
   createRoom,
   joinRoom,
   getRoom,
+  getAllRooms,
   removePlayer,
   markDisconnected,
   roomExists,
