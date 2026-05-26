@@ -512,7 +512,7 @@ export default function LobbyScreen({ room, playerId, isHost, onStart, onSetBots
         Developed by <span style={{ color: '#FFF6E6' }}>Kushal Soni</span>
         <span style={{ color: '#FFE08A', margin: '0 8px' }}>·</span>
         <a
-          href="https://github.com/KUSHAL-31"
+          href="https://github.com/KUSHAL-31/Kachuful-card-game"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: '#FFE08A', textDecoration: 'none', borderBottom: '1px solid rgba(255,224,138,0.42)' }}
