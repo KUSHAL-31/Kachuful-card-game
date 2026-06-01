@@ -252,7 +252,7 @@ function addChatMessage(roomCode, message) {
   if (!room) return null;
   if (!room.messages) room.messages = [];
   room.messages.push(message);
-  if (room.messages.length > 20) room.messages.shift();
+  if (room.messages.length > 30) room.messages.shift();
   touchRoom(room);
   return message;
 }

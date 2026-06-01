@@ -263,7 +263,7 @@ export default function App() {
     s.on('chat_message', (message) => {
       setChatMessages(prev => {
         const next = [...prev, message];
-        return next.length > 20 ? next.slice(next.length - 20) : next;
+        return next.length > 30 ? next.slice(next.length - 30) : next;
       });
     });
 
