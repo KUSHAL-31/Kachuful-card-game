@@ -12,12 +12,12 @@ const BOT_NAMES = [
   'Pappu', 'Bunty', 'Babloo', 'Guddu', 'Rinku', 'Pintu', 'Golu',
   'Sonu', 'Monu', 'Raju', 'Chintu', 'Munna', 'Chotu', 'Bittu', 'Lucky',
 ];
+const ROOM_CODE_CHARS = 'ABDEFHJKLMNPQRSTUVWXYZ23456789';
 
 function generateRoomCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
   }
   return code;
 }
@@ -310,6 +310,7 @@ module.exports = {
   deleteRoomIfNoConnectedHumans,
   getRoomCount,
   cleanupInactiveRooms,
+  generateRoomCode,
   setBotCount,
   touchRoom,
   addChatMessage,
