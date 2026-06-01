@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Hand from '../components/Hand';
 import TrickArea from '../components/TrickArea';
 import PlayerSeat from '../components/PlayerSeat';
@@ -8,15 +8,237 @@ import TrumpIndicator from '../components/TrumpIndicator';
 import ScoreTable from '../components/ScoreTable';
 import RoundSummaryModal from '../components/RoundSummaryModal';
 
-export default function GameScreen({ gameState, myHand, playerId, roomCode, isHost, emit }) {
-  const [showScores, setShowScores] = useState(false);
-  const [showRules, setShowRules] = useState(false);
+// ─── Chat Panel ───────────────────────────────────────────────────────────────
+function ChatPanel({ messages, playerId, onSend, onClose }) {
+  const [draft, setDraft] = useState('');
+  const bottomRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+
+  const submit = () => {
+    const text = draft.trim();
+    if (!text) return;
+    onSend(text);
+    setDraft('');
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+  };
+
+  const formatTime = (ts) => {
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexShrink: 0 }}>
+        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.05rem', color: '#FFE08A', fontWeight: 700 }}>
+          Room Chat
+        </div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#C8BA9D', fontSize: '1.1rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+      </div>
+
+      {/* Messages */}
+      <div className="chat-messages" style={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        paddingRight: 2,
+      }}>
+        {messages.length === 0 && (
+          <div style={{ textAlign: 'center', color: 'rgba(200,186,157,0.45)', fontSize: '0.78rem', marginTop: 40, lineHeight: 1.7 }}>
+            No messages yet.<br />Say something!
+          </div>
+        )}
+        {messages.map((msg) => {
+          const isMe = msg.senderId === playerId;
+          return (
+            <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}>
+              {!isMe && (
+                <div style={{ fontSize: '0.68rem', color: '#FFE08A', fontWeight: 700, marginBottom: 3, paddingLeft: 2 }}>
+                  {msg.senderName}
+                </div>
+              )}
+              <div style={{
+                maxWidth: '85%',
+                padding: '7px 11px',
+                borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                background: isMe
+                  ? 'linear-gradient(135deg, rgba(214,168,79,0.28), rgba(255,224,138,0.18))'
+                  : 'rgba(255,255,255,0.07)',
+                border: isMe
+                  ? '1px solid rgba(214,168,79,0.35)'
+                  : '1px solid rgba(255,255,255,0.1)',
+                color: isMe ? '#FFE08A' : '#D8C7A7',
+                fontSize: '0.82rem',
+                lineHeight: 1.5,
+                wordBreak: 'break-word',
+              }}>
+                {msg.text}
+              </div>
+              <div style={{ fontSize: '0.62rem', color: 'rgba(200,186,157,0.45)', marginTop: 3, paddingLeft: 2, paddingRight: 2 }}>
+                {formatTime(msg.timestamp)}
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div style={{
+        marginTop: 12,
+        flexShrink: 0,
+        display: 'flex',
+        gap: 8,
+        alignItems: 'flex-end',
+        borderTop: '1px solid rgba(255,255,255,0.08)',
+        paddingTop: 12,
+      }}>
+        <textarea
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value.slice(0, 200))}
+          onKeyDown={handleKey}
+          rows={1}
+          placeholder="Type a message…"
+          style={{
+            flex: 1,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,224,138,0.2)',
+            borderRadius: 10,
+            padding: '8px 11px',
+            color: '#E8D9B5',
+            fontSize: '0.8rem',
+            resize: 'none',
+            outline: 'none',
+            fontFamily: 'inherit',
+            lineHeight: 1.45,
+            maxHeight: 80,
+            overflowY: 'auto',
+          }}
+        />
+        <button
+          onClick={submit}
+          disabled={!draft.trim()}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 10,
+            background: draft.trim() ? 'rgba(214,168,79,0.85)' : 'rgba(255,255,255,0.06)',
+            border: 'none',
+            color: draft.trim() ? '#1a1000' : 'rgba(200,186,157,0.4)',
+            fontSize: '0.9rem',
+            cursor: draft.trim() ? 'pointer' : 'default',
+            transition: 'background 0.18s, color 0.18s',
+            flexShrink: 0,
+          }}
+        >
+          ➤
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+// ─── More Dropdown ────────────────────────────────────────────────────────────
+function MoreDropdown({ isHost, onRules, onEnd, onClose }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) onClose();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [onClose]);
+
+  const items = [
+    { label: 'Rules', icon: '📖', action: onRules },
+    ...(isHost ? [{ label: 'End Game', icon: '🛑', action: onEnd, danger: true }] : []),
+  ];
+
+  return (
+    <div ref={ref} style={{
+      position: 'absolute',
+      top: 'calc(100% + 6px)',
+      right: 0,
+      background: 'rgba(8,20,38,0.98)',
+      border: '1px solid rgba(255,224,138,0.2)',
+      borderRadius: 10,
+      boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+      overflow: 'hidden',
+      minWidth: 140,
+      zIndex: 250,
+    }}>
+      {items.map((item, i) => (
+        <button
+          key={item.label}
+          onClick={() => { item.action(); onClose(); }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 9,
+            width: '100%',
+            padding: '11px 16px',
+            background: 'none',
+            border: 'none',
+            borderTop: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+            color: item.danger ? '#F87171' : '#C8BA9D',
+            fontSize: '0.82rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = item.danger ? 'rgba(220,38,38,0.12)' : 'rgba(255,255,255,0.06)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'none'}
+        >
+          <span style={{ fontSize: '0.9rem' }}>{item.icon}</span>
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Chat Icon SVG ────────────────────────────────────────────────────────────
+function ChatIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+// ─── Game Screen ──────────────────────────────────────────────────────────────
+export default function GameScreen({ gameState, myHand, playerId, roomCode, isHost, emit, chatMessages = [], onSendMessage }) {
+  // sidebar: null | 'chat' | 'scores' | 'rules'
+  const [sidebar, setSidebar] = useState(null);
+  const [showMoreDropdown, setShowMoreDropdown] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [roundSummary, setRoundSummary] = useState(null);
   const [trickWinner, setTrickWinner] = useState(null);
   const [displayTrick, setDisplayTrick] = useState([]);
   const [cardSubmitted, setCardSubmitted] = useState(false);
   const [flyingCards, setFlyingCards] = useState([]);
+  const [lastSeenCount, setLastSeenCount] = useState(0);
+  const unreadCount = sidebar === 'chat' ? 0 : Math.max(0, chatMessages.length - lastSeenCount);
+
+
   const trickTargetRef = useRef(null);
   const cardSubmitTimerRef = useRef(null);
   const lastPlayedCardRef = useRef(null);
@@ -46,9 +268,23 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
   const currentBidder = players[currentBidderSeatIndex];
 
   const isMyTurn = currentPlayer?.id === playerId && phase === 'playing' && !cardSubmitted;
+  const trickIsComplete = players.length > 0 && displayTrick.length >= players.length;
+  const isMyTurnVisible = isMyTurn && !trickIsComplete;
   const isMyBidTurn = currentBidder?.id === playerId && phase === 'bidding';
 
   const otherPlayers = players;
+
+  // Mark all messages as seen whenever chat is open and new messages arrive
+  useEffect(() => {
+    if (sidebar === 'chat') {
+      setLastSeenCount(chatMessages.length);
+    }
+  }, [chatMessages, sidebar]);
+
+  const openChat = useCallback(() => {
+    setSidebar('chat');
+    setShowMoreDropdown(false);
+  }, []);
 
   const getForbiddenBid = () => {
     if (currentBidder?.id !== playerId) return null;
@@ -66,15 +302,21 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
     }
   }, [currentTrick]);
 
-  // Unlock card interactions once the server confirms the play (turn advances)
+  useEffect(() => {
+    if (displayTrick.length === 0 || players.length === 0 || displayTrick.length < players.length) return;
+    const timer = setTimeout(() => {
+      setDisplayTrick([]);
+      setTrickWinner(null);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [displayTrick, players.length]);
+
   useEffect(() => {
     if (cardSubmitTimerRef.current) clearTimeout(cardSubmitTimerRef.current);
     lastPlayedCardRef.current = null;
     setCardSubmitted(false);
   }, [currentTurnIndex, currentTrick.length]);
 
-  // Release the lock immediately if the server rejects the play (error event)
-  // or after 5s as a safety net for silent failures
   useEffect(() => {
     const handler = () => {
       if (cardSubmitTimerRef.current) clearTimeout(cardSubmitTimerRef.current);
@@ -140,6 +382,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
     setFlyingCards(prev => prev.filter(card => card.id !== id));
   };
 
+  const closeSidebar = () => setSidebar(null);
+
   return (
     <div className="premium-table" style={{
       height: '100%',
@@ -148,7 +392,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
       overflow: 'hidden',
       position: 'relative',
     }}>
-      {/* Top bar */}
+      {/* ── Top bar ── */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -162,61 +406,106 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
         position: 'relative',
         zIndex: 2,
       }}>
-        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.18rem', color: '#FFE08A', textShadow: '0 0 14px rgba(214,168,79,0.35)' }}>
-          Kachuful
-        </div>
+        {/* Scores button — left side */}
+        <button
+          onClick={() => { setSidebar(s => s === 'scores' ? null : 'scores'); setShowMoreDropdown(false); }}
+          style={{
+            padding: '6px 12px',
+            borderRadius: 6,
+            background: sidebar === 'scores' ? 'rgba(214,168,79,0.22)' : 'rgba(255,255,255,0.075)',
+            border: sidebar === 'scores' ? '1px solid rgba(214,168,79,0.45)' : '1px solid rgba(255,255,255,0.14)',
+            color: sidebar === 'scores' ? '#FFE08A' : '#C8BA9D',
+            fontSize: '0.76rem',
+            fontWeight: 800,
+            cursor: 'pointer',
+            transition: 'background 0.18s, border 0.18s',
+          }}
+        >
+          Scores
+        </button>
+
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {isHost && (
+          {/* Chat button with unread badge */}
+          <div style={{ position: 'relative', overflow: 'visible', zIndex: 3 }}>
             <button
-              onClick={() => setShowDeleteConfirm(true)}
+              onClick={openChat}
+              title="Chat"
               style={{
-                padding: '6px 12px',
+                padding: '6px 10px',
                 borderRadius: 6,
-                background: 'rgba(220,38,38,0.15)',
-                border: '1px solid rgba(220,38,38,0.4)',
-                color: '#F87171',
-                fontSize: '0.76rem',
-                fontWeight: 800,
+                background: sidebar === 'chat' ? 'rgba(214,168,79,0.22)' : 'rgba(255,255,255,0.075)',
+                border: sidebar === 'chat' ? '1px solid rgba(214,168,79,0.45)' : '1px solid rgba(255,255,255,0.14)',
+                color: sidebar === 'chat' ? '#FFE08A' : '#C8BA9D',
                 cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 5,
+                transition: 'background 0.18s, border 0.18s',
               }}
             >
-              End
+              <ChatIcon />
+              <span style={{ fontSize: '0.76rem', fontWeight: 800 }}>Chat</span>
             </button>
-          )}
-          <button
-            onClick={() => { setShowRules(s => !s); setShowScores(false); }}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 6,
-              background: 'rgba(255,255,255,0.075)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#C8BA9D',
-              fontSize: '0.76rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-            }}
-          >
-            Rules
-          </button>
-          <button
-            onClick={() => { setShowScores(s => !s); setShowRules(false); }}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 6,
-              background: 'rgba(255,255,255,0.075)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#C8BA9D',
-              fontSize: '0.76rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-            }}
-          >
-            Scores
-          </button>
+            {unreadCount > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: -6,
+                right: -6,
+                background: '#EF4444',
+                color: '#fff',
+                borderRadius: '50%',
+                minWidth: 20,
+                height: 20,
+                padding: '0 4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.65rem',
+                fontWeight: 900,
+                border: '2px solid #061020',
+                pointerEvents: 'none',
+                lineHeight: 1,
+                zIndex: 10,
+                boxShadow: '0 2px 8px rgba(239,68,68,0.7)',
+              }}>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </div>
+            )}
+          </div>
+
+          {/* More (⋯) button with dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowMoreDropdown(s => !s)}
+              style={{
+                padding: '6px 10px',
+                borderRadius: 6,
+                background: showMoreDropdown ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.075)',
+                border: '1px solid rgba(255,255,255,0.14)',
+                color: '#C8BA9D',
+                fontSize: '1.1rem',
+                fontWeight: 900,
+                cursor: 'pointer',
+                lineHeight: 1,
+                letterSpacing: '0.05em',
+              }}
+            >
+              ···
+            </button>
+            {showMoreDropdown && (
+              <MoreDropdown
+                isHost={isHost}
+                onRules={() => { setSidebar(s => s === 'rules' ? null : 'rules'); }}
+                onEnd={() => { setShowDeleteConfirm(true); }}
+                onClose={() => setShowMoreDropdown(false)}
+              />
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Main content */}
+      {/* ── Main content ── */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -312,8 +601,6 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
           gap: 6,
           paddingBottom: isMyBidTurn ? 'clamp(130px, 25vh, 210px)' : (phase === 'playing' ? 58 : 6),
         }}>
-
-          {/* Hand */}
           <Hand
             hand={myHand}
             onPlayCard={(card, meta = {}) => {
@@ -322,7 +609,6 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
               lastPlayedCardRef.current = card;
               if (cardSubmitTimerRef.current) clearTimeout(cardSubmitTimerRef.current);
               cardSubmitTimerRef.current = setTimeout(() => {
-                // Auto-retry once if no server confirmation after 5s
                 if (lastPlayedCardRef.current) {
                   emit('play_card', { roomCode, card: lastPlayedCardRef.current });
                 }
@@ -330,7 +616,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
               }, 5000);
               emit('play_card', { roomCode, card });
             }}
-            isMyTurn={isMyTurn}
+            isMyTurn={isMyTurnVisible}
             leadSuit={leadSuit}
             trumpSuit={trumpSuit}
             phase={phase}
@@ -419,18 +705,94 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
           backdropFilter: 'blur(12px)',
           zIndex: 190,
         }}>
-          {isMyTurn ? 'Your turn to play!' : `Waiting for ${currentPlayer?.name || 'player'} to play...`}
+          {isMyTurnVisible
+            ? 'Your turn to play!'
+            : isMyTurn
+            ? 'You won the trick!'
+            : `Waiting for ${currentPlayer?.name || 'player'} to play...`}
         </div>
       )}
 
-      {showScores && (
-        <ScoreTable
-          players={players}
-          bids={bids}
-          tricksWon={tricksWon}
-          scores={scores}
-          onClose={() => setShowScores(false)}
-        />
+      {/* ── Right Sidebar ── */}
+      {sidebar && (
+        <div className="sidebar-overlay" style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 200,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          overflow: 'hidden',
+        }}>
+          <div onClick={closeSidebar} style={{ flex: 1 }} />
+          <div style={{
+            width: 'min(340px, 92vw)',
+            height: '100dvh',
+            maxHeight: '100dvh',
+            background: 'rgba(6,16,30,0.98)',
+            borderLeft: '1px solid rgba(255,224,138,0.25)',
+            boxShadow: '-18px 0 48px rgba(0,0,0,0.42)',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '20px 18px',
+            overflow: 'hidden',
+            boxSizing: 'border-box',
+          }}>
+            {sidebar === 'chat' && (
+              <ChatPanel
+                messages={chatMessages}
+                playerId={playerId}
+                onSend={onSendMessage}
+                onClose={closeSidebar}
+              />
+            )}
+
+            {sidebar === 'scores' && (
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexShrink: 0 }}>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.05rem', color: '#FFE08A', fontWeight: 700 }}>Scores</div>
+                  <button onClick={closeSidebar} style={{ background: 'none', border: 'none', color: '#C8BA9D', fontSize: '1.1rem', cursor: 'pointer' }}>✕</button>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  <ScoreTable
+                    players={players}
+                    bids={bids}
+                    tricksWon={tricksWon}
+                    scores={scores}
+                    onClose={closeSidebar}
+                    inline
+                  />
+                </div>
+              </div>
+            )}
+
+            {sidebar === 'rules' && (
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', gap: 18 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.1rem', color: '#FFE08A', fontWeight: 700 }}>
+                    How to Play
+                  </div>
+                  <button onClick={closeSidebar} style={{ background: 'none', border: 'none', color: '#C8BA9D', fontSize: '1.1rem', cursor: 'pointer' }}>✕</button>
+                </div>
+
+                {[
+                  { title: '🎯 Objective', body: 'Predict exactly how many tricks you will win each round. Score points only if your prediction is correct.' },
+                  { title: '🃏 The Deck & Deal', body: 'A standard 52-card deck is used. Cards dealt per round follow a pyramid: 1 card in round 1, increasing by 1 each round up to the max, then decreasing back to 1. With 2–5 players the max is 10 cards; with 6–10 players it scales down to fit the deck.' },
+                  { title: '♠ Trump Suit', body: 'Each round has a trump suit that rotates in order: Spades → Diamonds → Clubs → Hearts, then repeats. Trump cards beat all non-trump cards regardless of rank.' },
+                  { title: '📢 Bidding', body: 'Starting from the player left of the dealer, each player bids how many tricks they expect to win (0 to cards dealt). The dealer bids last and has a restriction — their bid cannot make the total bids equal the number of cards dealt. This keeps at least one player from winning their bid.' },
+                  { title: '🤚 Playing a Trick', body: "The player who won the last trick leads first. You must follow the led suit if you have it. If you don't have the led suit, you can play any card including trump. The highest trump wins the trick; if no trump is played, the highest card of the led suit wins." },
+                  { title: '🏆 Scoring', body: 'If you win exactly as many tricks as you bid: score = 10 + tricks won.\nIf you win more or fewer tricks than you bid: score = 0 for that round.\nBid 0 and win 0 → score 10. Bid 3 and win 3 → score 13.' },
+                  { title: '🔄 Rounds', body: 'The game runs through all rounds of the pyramid. After the final round the player with the highest total score wins. If scores are tied, all tied players share the win.' },
+                  { title: '👑 Dealer (Compulsory Player)', body: 'The dealer rotates each round. The dealer badge shows who it is. The dealer always bids last and faces the forbidden bid restriction.' },
+                ].map(({ title, body }) => (
+                  <div key={title} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 14 }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#FFE08A', marginBottom: 6 }}>{title}</div>
+                    <div style={{ fontSize: '0.84rem', color: '#D8C7A7', lineHeight: 1.65, whiteSpace: 'pre-line' }}>{body}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {roundSummary && (
@@ -442,6 +804,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
         />
       )}
 
+      {/* End game confirm */}
       {showDeleteConfirm && (
         <div style={{
           position: 'fixed',
@@ -476,110 +839,24 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 style={{
-                  flex: 1,
-                  padding: '10px',
-                  borderRadius: 8,
-                  background: 'rgba(255,255,255,0.07)',
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  color: '#C8BA9D',
-                  fontSize: '0.84rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
+                  flex: 1, padding: '10px', borderRadius: 8,
+                  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)',
+                  color: '#C8BA9D', fontSize: '0.84rem', fontWeight: 700, cursor: 'pointer',
                 }}
               >
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  emit('delete_room', { roomCode });
-                  setShowDeleteConfirm(false);
-                }}
+                onClick={() => { emit('delete_room', { roomCode }); setShowDeleteConfirm(false); }}
                 style={{
-                  flex: 1,
-                  padding: '10px',
-                  borderRadius: 8,
-                  background: 'rgba(220,38,38,0.85)',
-                  border: '1px solid rgba(220,38,38,0.6)',
-                  color: '#fff',
-                  fontSize: '0.84rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
+                  flex: 1, padding: '10px', borderRadius: 8,
+                  background: 'rgba(220,38,38,0.85)', border: '1px solid rgba(220,38,38,0.6)',
+                  color: '#fff', fontSize: '0.84rem', fontWeight: 700, cursor: 'pointer',
                 }}
               >
                 End Game
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {showRules && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 200,
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}>
-          <div onClick={() => setShowRules(false)} style={{ flex: 1 }} />
-          <div style={{
-            width: 'min(340px, 92vw)',
-            height: '100%',
-            background: 'rgba(6,16,30,0.98)',
-            borderLeft: '1px solid rgba(255,224,138,0.25)',
-            boxShadow: '-18px 0 48px rgba(0,0,0,0.42)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflowY: 'auto',
-            padding: '20px 18px',
-            gap: 18,
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.1rem', color: '#FFE08A', fontWeight: 700 }}>
-                How to Play
-              </div>
-              <button onClick={() => setShowRules(false)} style={{ background: 'none', border: 'none', color: '#C8BA9D', fontSize: '1.1rem', cursor: 'pointer' }}>✕</button>
-            </div>
-
-            {[
-              {
-                title: '🎯 Objective',
-                body: 'Predict exactly how many tricks you will win each round. Score points only if your prediction is correct.',
-              },
-              {
-                title: '🃏 The Deck & Deal',
-                body: 'A standard 52-card deck is used. Cards dealt per round follow a pyramid: 1 card in round 1, increasing by 1 each round up to the max, then decreasing back to 1. With 2–5 players the max is 10 cards; with 6–10 players it scales down to fit the deck.',
-              },
-              {
-                title: '♠ Trump Suit',
-                body: 'Each round has a trump suit that rotates in order: Spades → Diamonds → Clubs → Hearts, then repeats. Trump cards beat all non-trump cards regardless of rank.',
-              },
-              {
-                title: '📢 Bidding',
-                body: 'Starting from the player left of the dealer, each player bids how many tricks they expect to win (0 to cards dealt). The dealer bids last and has a restriction — their bid cannot make the total bids equal the number of cards dealt. This keeps at least one player from winning their bid.',
-              },
-              {
-                title: '🤚 Playing a Trick',
-                body: 'The player who won the last trick leads first. You must follow the led suit if you have it. If you don\'t have the led suit, you can play any card including trump. The highest trump wins the trick; if no trump is played, the highest card of the led suit wins.',
-              },
-              {
-                title: '🏆 Scoring',
-                body: 'If you win exactly as many tricks as you bid: score = 10 + tricks won.\nIf you win more or fewer tricks than you bid: score = 0 for that round.\nBid 0 and win 0 → score 10. Bid 3 and win 3 → score 13.',
-              },
-              {
-                title: '🔄 Rounds',
-                body: 'The game runs through all rounds of the pyramid. After the final round the player with the highest total score wins. If scores are tied, all tied players share the win.',
-              },
-              {
-                title: '👑 Dealer (Compulsory Player)',
-                body: 'The dealer rotates each round. The dealer badge shows who it is. The dealer always bids last and faces the forbidden bid restriction.',
-              },
-            ].map(({ title, body }) => (
-              <div key={title} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 14 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#FFE08A', marginBottom: 6 }}>{title}</div>
-                <div style={{ fontSize: '0.84rem', color: '#D8C7A7', lineHeight: 1.65, whiteSpace: 'pre-line' }}>{body}</div>
-              </div>
-            ))}
           </div>
         </div>
       )}

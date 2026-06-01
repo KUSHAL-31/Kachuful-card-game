@@ -151,6 +151,7 @@ class GameOrchestrator {
       currentTrick: room.game.currentTrick,
       nextPlayerId: result.nextPlayerId || null,
       trickComplete: result.trickComplete,
+      winnerId: result.trickComplete ? result.winnerId : undefined,
     });
 
     if (!result.trickComplete) {
