@@ -45,7 +45,7 @@ function createRoomRouter(roomStore) {
 function generateAvailableRoomCode(roomStore) {
   let roomCode;
   do {
-    roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    roomCode = roomStore.generateRoomCode();
   } while (roomStore.roomExists(roomCode));
   return roomCode;
 }
