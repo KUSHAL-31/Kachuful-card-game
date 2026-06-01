@@ -6,6 +6,8 @@ const { serializePlayers, sanitizeRoom } = require('../serializers/playerSeriali
 const { getPublicGameState } = require('../serializers/gameSerializer');
 const logger = require('../utils/logger');
 
+const MAX_CHAT_MESSAGE_LENGTH = 200;
+
 // Wraps a socket event handler so any unexpected throw is caught, logged, and
 // reported back to the client rather than crashing the process.
 function safeHandler(event, socketId, fn) {
@@ -23,16 +25,39 @@ function safeHandler(event, socketId, fn) {
   };
 }
 
+const MAX_PLAYER_NAME_LENGTH = 20;
+const RATE_LIMIT_WINDOW_MS = 2000;
+const RATE_LIMIT_MAX_EVENTS = 10;
+
+function makeRateLimiter() {
+  let count = 0;
+  let windowStart = Date.now();
+  return function isAllowed() {
+    const now = Date.now();
+    if (now - windowStart > RATE_LIMIT_WINDOW_MS) {
+      count = 0;
+      windowStart = now;
+    }
+    count++;
+    return count <= RATE_LIMIT_MAX_EVENTS;
+  };
+}
+
 function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
   const socketRoomMap = new Map();
 
   io.on('connection', (socket) => {
     logger.info('SOCKET_CONNECTED', { socketId: socket.id });
+    const isRateLimited = makeRateLimiter();
 
     socket.on('join_room', safeHandler('join_room', socket.id, ({ roomCode, playerName, isCreating = false, token = null }) => {
+      if (!isRateLimited()) return socket.emit('error', { message: 'Too many requests. Please slow down.' });
       if (!roomCode || !playerName) {
         logger.warn('JOIN_FAILED', { socketId: socket.id, reason: 'missing_room_code_or_player_name' });
         return socket.emit('error', { message: 'Room code and player name required' });
+      }
+      if (playerName.trim().length > MAX_PLAYER_NAME_LENGTH) {
+        return socket.emit('error', { message: `Player name must be ${MAX_PLAYER_NAME_LENGTH} characters or fewer` });
       }
 
       const code = roomCode.toUpperCase().trim();
@@ -135,6 +160,7 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
     }));
 
     socket.on('place_bid', safeHandler('place_bid', socket.id, ({ roomCode, bid }) => {
+      if (!isRateLimited()) return socket.emit('error', { message: 'Too many requests. Please slow down.' });
       const room = roomStore.getRoom(roomCode);
       if (!room?.game) return socket.emit('error', { message: 'Game not found' });
       if (room.game.phase !== 'bidding') return socket.emit('error', { message: 'Not bidding phase' });
@@ -148,6 +174,7 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
     }));
 
     socket.on('play_card', safeHandler('play_card', socket.id, ({ roomCode, card }) => {
+      if (!isRateLimited()) return socket.emit('error', { message: 'Too many requests. Please slow down.' });
       const room = roomStore.getRoom(roomCode);
       if (!room?.game) return socket.emit('error', { message: 'Game not found' });
       if (room.game.phase !== 'playing') return socket.emit('error', { message: 'Not playing phase' });
@@ -200,6 +227,29 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
         players: serializePlayers(room.players),
         status: 'lobby',
       });
+    }));
+
+    socket.on('send_message', safeHandler('send_message', socket.id, ({ roomCode, text }) => {
+      if (!isRateLimited()) return socket.emit('error', { message: 'Too many requests. Please slow down.' });
+      const room = roomStore.getRoom(roomCode);
+      if (!room) return socket.emit('error', { message: 'Room not found' });
+
+      const player = room.players.find(p => p.id === socket.id);
+      if (!player) return socket.emit('error', { message: 'Player not found' });
+
+      const trimmed = String(text || '').trim().slice(0, MAX_CHAT_MESSAGE_LENGTH);
+      if (!trimmed) return;
+
+      const message = {
+        id: `${socket.id}-${Date.now()}`,
+        senderId: socket.id,
+        senderName: player.name,
+        text: trimmed,
+        timestamp: Date.now(),
+      };
+
+      roomStore.addChatMessage(roomCode, message);
+      io.to(roomCode).emit('chat_message', message);
     }));
 
     socket.on('leave_room', safeHandler('leave_room', socket.id, ({ roomCode }) => {

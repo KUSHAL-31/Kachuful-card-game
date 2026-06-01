@@ -46,6 +46,7 @@ function createRoom(hostId, hostName, customCode) {
     }],
     status: 'lobby',
     game: null,
+    messages: [],
     lastActivity: Date.now(),
   };
 
@@ -82,6 +83,17 @@ function joinRoom(roomCode, playerId, playerName, token) {
     }
     return { error: 'Game already in progress' };
   }
+
+  if (room.status === 'finished') {
+    // Allow reconnect to result screen (both disconnected and fast-reconnect races)
+    const existingIndex = room.players.findIndex(player => player.name === playerName);
+    if (existingIndex !== -1) {
+      const { oldId } = reconnectPlayer(room, existingIndex, playerId);
+      return { room, player: room.players[existingIndex], rejoined: true, oldId, token: room.players[existingIndex].token };
+    }
+    return { error: 'Game has already ended' };
+  }
+
   if (room.players.length >= MAX_PLAYERS) return { error: 'Room is full' };
 
   const newToken = randomUUID();
@@ -235,6 +247,16 @@ function getAllRooms() {
   return Array.from(rooms.values());
 }
 
+function addChatMessage(roomCode, message) {
+  const room = getRoom(roomCode);
+  if (!room) return null;
+  if (!room.messages) room.messages = [];
+  room.messages.push(message);
+  if (room.messages.length > 30) room.messages.shift();
+  touchRoom(room);
+  return message;
+}
+
 function touchRoom(room) {
   room.lastActivity = Date.now();
 }
@@ -290,4 +312,5 @@ module.exports = {
   cleanupInactiveRooms,
   setBotCount,
   touchRoom,
+  addChatMessage,
 };

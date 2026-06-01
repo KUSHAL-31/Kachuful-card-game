@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ScoreTable({ players, bids, tricksWon, scores, onClose }) {
+function ScoreList({ players, bids, tricksWon, scores }) {
   const rankedPlayers = [...players]
     .sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0))
     .reduce((ranked, player, index) => {
@@ -10,6 +10,75 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
       ranked.push({ player, score, displayRank });
       return ranked;
     }, []);
+
+  return (
+    <div style={{ padding: '8px 0' }}>
+      {rankedPlayers.map(({ player, score, displayRank }) => {
+        const bid = bids?.[player.id];
+        const won = tricksWon?.[player.id] ?? 0;
+        const hasBid = bid !== undefined && bid !== null;
+
+        return (
+          <div key={player.id} style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '10px 4px',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            gap: 10,
+          }}>
+            <div style={{
+              width: 22,
+              height: 22,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              color: '#C8BA9D',
+              flexShrink: 0,
+            }}>
+              {displayRank}
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: '#FFF6E6',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {player.name}
+              </div>
+              {hasBid && (
+                <div style={{ fontSize: '0.74rem', color: '#C8BA9D' }}>
+                  Bid {bid} · Won {won}
+                </div>
+              )}
+            </div>
+
+            <div style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: '#FFE08A',
+              flexShrink: 0,
+            }}>
+              {score}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function ScoreTable({ players, bids, tricksWon, scores, onClose, inline = false }) {
+  if (inline) {
+    return <ScoreList players={players} bids={bids} tricksWon={tricksWon} scores={scores} />;
+  }
 
   return (
     <div style={{
@@ -37,75 +106,12 @@ export default function ScoreTable({ players, bids, tricksWon, scores, onClose }
         <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.18rem', color: '#FFF6E6' }}>
           Scores
         </span>
-        <button
-          onClick={onClose}
-          style={{ background: 'none', color: '#C8BA9D', fontSize: '1.2rem', cursor: 'pointer' }}
-        >
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#C8BA9D', fontSize: '1.2rem', cursor: 'pointer' }}>
           ✕
         </button>
       </div>
-
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
-        {rankedPlayers
-          .map(({ player, score, displayRank }) => {
-            const bid = bids?.[player.id];
-            const won = tricksWon?.[player.id] ?? 0;
-            const hasBid = bid !== undefined && bid !== null;
-            const hitBid = hasBid && won === bid;
-
-            return (
-              <div key={player.id} style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '10px 16px',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                gap: 10,
-              }}>
-                <div style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.08)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.78rem',
-                  fontWeight: 700,
-                  color: '#C8BA9D',
-                  flexShrink: 0,
-                }}>
-                  {displayRank}
-                </div>
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: '#FFF6E6',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {player.name}
-                  </div>
-                  {hasBid && (
-                    <div style={{ fontSize: '0.74rem', color: '#C8BA9D' }}>
-                      Bid {bid} · Won {won}
-                    </div>
-                  )}
-                </div>
-
-                <div style={{
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  color: '#FFE08A',
-                  flexShrink: 0,
-                }}>
-                  {score}
-                </div>
-              </div>
-            );
-          })}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <ScoreList players={players} bids={bids} tricksWon={tricksWon} scores={scores} />
       </div>
     </div>
   );

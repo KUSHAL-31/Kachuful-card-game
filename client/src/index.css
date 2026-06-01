@@ -32,6 +32,12 @@ html, body {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background:
@@ -44,8 +50,9 @@ html, body {
 }
 
 #root {
-  height: 100%;
-  width: 100%;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
 }
 
 button {
@@ -203,18 +210,28 @@ input {
   color: rgba(200, 186, 157, 0.68);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+/* Thin scrollbar inside chat messages */
+.chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(214,168,79,0.3) transparent;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+.chat-messages::-webkit-scrollbar {
+  display: block;
+  width: 3px;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--gold);
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(214,168,79,0.3);
   border-radius: 2px;
 }
+
+/* Hide all scrollbars globally */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 
 @keyframes glow-gold {
   0%, 100% { box-shadow: 0 0 12px rgba(255, 224, 138, 0.45), inset 0 1px 0 rgba(255,255,255,0.1); }
