@@ -41,9 +41,12 @@ export default function App() {
   const [gameState, setGameState] = useState(null);
   const [myHand, setMyHand] = useState([]);
   const [gameResult, setGameResult] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
 
   const roomCodeRef = useRef(savedSession?.roomCode || null);
   const playerNameRef = useRef(savedSession?.playerName || null);
+  const gameResultRef = useRef(null);
+  const pendingAutoReconnectRef = useRef(false);
 
   const emit = useCallback((event, data) => {
     getSocket().emit(event, data);
@@ -59,18 +62,28 @@ export default function App() {
       const playerName = playerNameRef.current || session?.playerName;
       const token = session?.token;
       if (roomCode && playerName) {
+        pendingAutoReconnectRef.current = true;
         s.emit('join_room', { roomCode, playerName, isCreating: false, token });
       }
     });
 
     s.on('room_joined', ({ room, playerId: pid, isHost: host, token }) => {
+      pendingAutoReconnectRef.current = false;
+      // If we're reconnecting to a finished room but have no result in memory,
+      // this is a fresh page load with a stale session — clear it and stay on landing.
+      if (room.status === 'finished' && !gameResultRef.current) {
+        clearSession();
+        roomCodeRef.current = null;
+        return;
+      }
       setRoom(room);
       setPlayerId(pid);
       setIsHost(host);
       roomCodeRef.current = room.roomCode;
       if (token) saveSession(room.roomCode, playerNameRef.current, token);
-      // Don't navigate to lobby if reconnecting mid-game; game_started will restore the game screen
-      if (room.status !== 'playing') {
+      // Don't navigate away if reconnecting mid-game (game_started restores game screen)
+      // or reconnecting to a finished room (stay on result screen).
+      if (room.status !== 'playing' && room.status !== 'finished') {
         setScreen('lobby');
       }
     });
@@ -83,6 +96,12 @@ export default function App() {
         return updated;
       });
       if (status === 'lobby') {
+        // Coming back to lobby from result screen means a new game is starting —
+        // clear the old session so stale tokens don't cause confusion.
+        if (gameResultRef.current) {
+          clearSession();
+          gameResultRef.current = null;
+        }
         setScreen('lobby');
         setGameState(null);
         setMyHand([]);
@@ -146,10 +165,19 @@ export default function App() {
       });
     });
 
-    s.on('card_played', ({ playerId: pId, card, currentTrick, nextPlayerId, trickComplete }) => {
+    s.on('card_played', ({ playerId: pId, card, currentTrick, nextPlayerId, trickComplete, winnerId }) => {
       setGameState(prev => {
         if (!prev) return prev;
-        const nextTurnIndex = nextPlayerId ? prev.players.findIndex(p => p.id === nextPlayerId) : prev.currentTurnIndex;
+        let nextTurnIndex;
+        if (nextPlayerId) {
+          nextTurnIndex = prev.players.findIndex(p => p.id === nextPlayerId);
+        } else if (trickComplete && winnerId) {
+          // Update currentTurnIndex to the trick winner immediately so a missed
+          // trick_complete event doesn't leave the client permanently stuck.
+          nextTurnIndex = prev.players.findIndex(p => p.id === winnerId);
+        } else {
+          nextTurnIndex = prev.currentTurnIndex;
+        }
         const newLeadSuit = currentTrick.length === 1 ? currentTrick[0].card.suit : prev.leadSuit;
         return {
           ...prev,
@@ -200,8 +228,11 @@ export default function App() {
     });
 
     s.on('game_over', ({ scores, roundHistory, winners, players, reason }) => {
-      clearSession();
-      setGameResult({ scores, roundHistory, winners, players, reason });
+      // Keep session alive so the token works if the socket reconnects on the result screen.
+      // Session is cleared on explicit leave or when a new game starts (room_updated → lobby).
+      const result = { scores, roundHistory, winners, players, reason };
+      gameResultRef.current = result;
+      setGameResult(result);
       setScreen('result');
     });
 
@@ -229,14 +260,33 @@ export default function App() {
       });
     });
 
+    s.on('chat_message', (message) => {
+      setChatMessages(prev => {
+        const next = [...prev, message];
+        return next.length > 30 ? next.slice(next.length - 30) : next;
+      });
+    });
+
     s.on('error', ({ message }) => {
       console.error('Game error:', message);
-      // If rejoin failed (room gone), clear stale session and drop to landing
-      if (loadSession() && !roomCodeRef.current) {
+      // Auto-reconnect failed (stale session, server restart, room expired) — clean up
+      // silently without showing a confusing toast. This covers both fresh page loads
+      // and mid-session reconnects where the server no longer has the room.
+      if (pendingAutoReconnectRef.current) {
+        pendingAutoReconnectRef.current = false;
         clearSession();
         roomCodeRef.current = null;
         playerNameRef.current = null;
         setScreen('landing');
+        return;
+      }
+      // Room expired before Play Again was clicked — redirect to landing
+      if (message === 'Room not found' || message === 'Game has already ended') {
+        clearSession();
+        roomCodeRef.current = null;
+        playerNameRef.current = null;
+        setScreen('landing');
+        return;
       }
       showToast(message, 'error');
       // Let GameScreen know a play was rejected so it can release the card lock
@@ -258,6 +308,7 @@ export default function App() {
       s.off('game_over');
       s.off('player_disconnected');
       s.off('player_reconnected');
+      s.off('chat_message');
       s.off('error');
     };
   }, []);
@@ -269,6 +320,7 @@ export default function App() {
   }
 
   const handleJoined = ({ roomCode, playerName, isCreating }) => {
+    pendingAutoReconnectRef.current = false;
     playerNameRef.current = playerName;
     roomCodeRef.current = roomCode;
     const session = loadSession();
@@ -291,11 +343,13 @@ export default function App() {
     clearSession();
     roomCodeRef.current = null;
     playerNameRef.current = null;
+    gameResultRef.current = null;
     setRoom(null);
     setPlayerId(null);
     setGameState(null);
     setMyHand([]);
     setGameResult(null);
+    setChatMessages([]);
     setIsHost(false);
     setScreen('landing');
   };
@@ -305,7 +359,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       {screen === 'intro' && (
         <IntroScreen onPlay={() => setScreen('landing')} />
       )}
@@ -333,6 +387,8 @@ export default function App() {
           roomCode={roomCodeRef.current}
           isHost={isHost}
           emit={emit}
+          chatMessages={chatMessages}
+          onSendMessage={(text) => emit('send_message', { roomCode: roomCodeRef.current, text })}
         />
       )}
 

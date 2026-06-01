@@ -27,7 +27,8 @@ process.on('unhandledRejection', (reason) => {
 
 // ── App setup ─────────────────────────────────────────────────────────────────
 const app = express();
-app.use(cors());
+const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
+app.use(cors({ origin: ALLOWED_ORIGIN }));
 app.use(express.json());
 
 // HTTP request logging middleware
@@ -66,7 +67,7 @@ app.get('/health', (req, res) => {
 // ── Socket.IO ─────────────────────────────────────────────────────────────────
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] },
+  cors: { origin: ALLOWED_ORIGIN, methods: ['GET', 'POST'] },
   pingTimeout: 60000,
   pingInterval: 25000,
 });
