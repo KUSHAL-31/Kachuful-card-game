@@ -286,6 +286,9 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
     setShowMoreDropdown(false);
   }, []);
 
+  const humanCount = players.filter(p => !p.isBot).length;
+  const chatDisabled = humanCount <= 1;
+
   const getForbiddenBid = () => {
     if (currentBidder?.id !== playerId) return null;
     if (currentBidderSeatIndex !== compulsoryPlayerIndex) return null;
@@ -428,15 +431,16 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
           {/* Chat button with unread badge */}
           <div style={{ position: 'relative', overflow: 'visible', zIndex: 3 }}>
             <button
-              onClick={openChat}
-              title="Chat"
+              onClick={chatDisabled ? undefined : openChat}
+              title={chatDisabled ? 'No other players to chat with' : 'Chat'}
+              disabled={chatDisabled}
               style={{
                 padding: '6px 10px',
                 borderRadius: 6,
-                background: sidebar === 'chat' ? 'rgba(214,168,79,0.22)' : 'rgba(255,255,255,0.075)',
-                border: sidebar === 'chat' ? '1px solid rgba(214,168,79,0.45)' : '1px solid rgba(255,255,255,0.14)',
-                color: sidebar === 'chat' ? '#FFE08A' : '#C8BA9D',
-                cursor: 'pointer',
+                background: chatDisabled ? 'rgba(255,255,255,0.03)' : sidebar === 'chat' ? 'rgba(214,168,79,0.22)' : 'rgba(255,255,255,0.075)',
+                border: chatDisabled ? '1px solid rgba(255,255,255,0.07)' : sidebar === 'chat' ? '1px solid rgba(214,168,79,0.45)' : '1px solid rgba(255,255,255,0.14)',
+                color: chatDisabled ? 'rgba(200,186,157,0.25)' : sidebar === 'chat' ? '#FFE08A' : '#C8BA9D',
+                cursor: chatDisabled ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
