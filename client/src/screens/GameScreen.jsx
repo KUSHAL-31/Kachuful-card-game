@@ -398,7 +398,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
       {/* ── Top bar ── */}
       <div style={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         alignItems: 'center',
         padding: 'clamp(7px, 1.2vh, 10px) 14px',
         background: 'linear-gradient(180deg, rgba(6,16,30,0.86), rgba(6,16,30,0.55))',
@@ -409,24 +409,6 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
         position: 'relative',
         zIndex: 2,
       }}>
-        {/* Scores button — left side */}
-        <button
-          onClick={() => { setSidebar(s => s === 'scores' ? null : 'scores'); setShowMoreDropdown(false); }}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 6,
-            background: sidebar === 'scores' ? 'rgba(214,168,79,0.22)' : 'rgba(255,255,255,0.075)',
-            border: sidebar === 'scores' ? '1px solid rgba(214,168,79,0.45)' : '1px solid rgba(255,255,255,0.14)',
-            color: sidebar === 'scores' ? '#FFE08A' : '#C8BA9D',
-            fontSize: '0.76rem',
-            fontWeight: 800,
-            cursor: 'pointer',
-            transition: 'background 0.18s, border 0.18s',
-          }}
-        >
-          Scores
-        </button>
-
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {/* Chat button with unread badge */}
           <div style={{ position: 'relative', overflow: 'visible', zIndex: 3 }}>
@@ -477,6 +459,24 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
               </div>
             )}
           </div>
+
+          {/* Scores button */}
+          <button
+            onClick={() => { setSidebar(s => s === 'scores' ? null : 'scores'); setShowMoreDropdown(false); }}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 6,
+              background: sidebar === 'scores' ? 'rgba(214,168,79,0.22)' : 'rgba(255,255,255,0.075)',
+              border: sidebar === 'scores' ? '1px solid rgba(214,168,79,0.45)' : '1px solid rgba(255,255,255,0.14)',
+              color: sidebar === 'scores' ? '#FFE08A' : '#C8BA9D',
+              fontSize: '0.76rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              transition: 'background 0.18s, border 0.18s',
+            }}
+          >
+            Scores
+          </button>
 
           {/* More (⋯) button with dropdown */}
           <div style={{ position: 'relative' }}>
