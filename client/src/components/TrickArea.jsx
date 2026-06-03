@@ -3,7 +3,7 @@ import Card from './Card';
 
 export default function TrickArea({ currentTrick, players, trumpSuit, winnerId }) {
   const isMobile = window.innerWidth < 768;
-  const tableHeight = isMobile ? 184 : 176;
+  const tableHeight = isMobile ? 172 : 164;
   const cardCount = currentTrick?.length || 0;
   const overlap = isMobile
     ? cardCount >= 8 ? -58 : cardCount >= 6 ? -54 : -46
@@ -47,14 +47,13 @@ export default function TrickArea({ currentTrick, players, trumpSuit, winnerId }
       alignItems: 'center',
       justifyContent: 'center',
       flexWrap: 'nowrap',
-      padding: isMobile ? '16px 12px' : '16px 18px',
-      overflowX: 'hidden',
-      overflowY: 'hidden',
+      padding: isMobile ? '8px 12px' : '8px 18px',
+      overflow: 'visible',
     }}>
       <div style={{
         width: Math.min(fanWidth, isMobile ? 310 : 460),
         maxWidth: '100%',
-        height: isMobile ? 160 : 148,
+        height: isMobile ? 154 : 146,
         position: 'relative',
       }}>
       {currentTrick.map(({ playerId, card, seatIndex }, index) => {
