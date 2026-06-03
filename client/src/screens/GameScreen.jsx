@@ -566,7 +566,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: 0,
-          overflow: 'hidden',
+          overflow: 'visible',
           paddingTop: isMobileBidding ? 'clamp(6px, 1.2vh, 18px)' : (isMobile ? 10 : 0),
         }}>
           <div style={{
@@ -738,7 +738,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
             display: 'flex',
             flexDirection: 'column',
             padding: '20px 18px',
-            overflow: 'hidden',
+            overflow: 'auto',
             boxSizing: 'border-box',
           }}>
             {sidebar === 'chat' && (

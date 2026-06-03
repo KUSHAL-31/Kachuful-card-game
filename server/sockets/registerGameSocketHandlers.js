@@ -29,6 +29,12 @@ const MAX_PLAYER_NAME_LENGTH = 20;
 const RATE_LIMIT_WINDOW_MS = 2000;
 const RATE_LIMIT_MAX_EVENTS = 10;
 
+// Tracks delayed game-abort timers so they can be cancelled on reconnect.
+const pendingAbortTimers = new Map();
+// Tracks room-deletion timers so they can be cancelled on reconnect.
+// Each room maps to a Set of timer IDs (multiple disconnects can stack timers).
+const pendingDeleteTimers = new Map();
+
 function makeRateLimiter() {
   let count = 0;
   let windowStart = Date.now();
@@ -70,6 +76,13 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
       const { room } = result;
       socket.join(code);
       socketRoomMap.set(socket.id, code);
+
+      // Cancel any pending abort/delete timers — player made it back in time.
+      if (pendingAbortTimers.has(code)) {
+        clearTimeout(pendingAbortTimers.get(code));
+        pendingAbortTimers.delete(code);
+      }
+      cancelPendingDeleteTimers(code);
 
       const humanPlayers = room.players.filter(p => !p.isBot);
       const botPlayers = room.players.filter(p => p.isBot);
@@ -368,23 +381,35 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
   });
   const connectedParticipantCount = room.players.filter(p => p.isConnected).length;
   if (connectedParticipantCount <= 1 && room.status === 'playing') {
-    logger.warn('GAME_ABORTED', {
-      roomCode,
-      reason: 'Not enough players connected',
-      round: room.game?.currentRound ?? null,
-      durationMs: room.game?.startedAt ? Date.now() - room.game.startedAt : null,
-    });
+    // Give the player time to reconnect before aborting — covers brief backgrounds,
+    // network blips, and mobile OS suspending the socket.
+    const abortTimer = setTimeout(() => {
+      pendingAbortTimers.delete(roomCode);
+      const currentRoom = roomStore.getRoom(roomCode);
+      if (!currentRoom || currentRoom.status !== 'playing') return;
+      const stillConnected = currentRoom.players.filter(p => p.isConnected).length;
+      if (stillConnected > 1) return;
 
-    room.status = 'finished';
-    io.to(roomCode).emit('game_over', {
-      scores: room.game?.scores || {},
-      roundHistory: room.game?.roundHistory || [],
-      winners: [],
-      players: room.game?.players || [],
-      reason: 'Not enough players',
-    });
-    gameOrchestrator.compactFinishedGame(room);
-    gameOrchestrator.scheduleFinishedRoomCleanup(roomCode);
+      logger.warn('GAME_ABORTED', {
+        roomCode,
+        reason: 'Not enough players connected',
+        round: currentRoom.game?.currentRound ?? null,
+        durationMs: currentRoom.game?.startedAt ? Date.now() - currentRoom.game.startedAt : null,
+      });
+
+      currentRoom.status = 'finished';
+      io.to(roomCode).emit('game_over', {
+        scores: currentRoom.game?.scores || {},
+        roundHistory: currentRoom.game?.roundHistory || [],
+        winners: [],
+        players: currentRoom.game?.players || [],
+        reason: 'Not enough players',
+      });
+      gameOrchestrator.compactFinishedGame(currentRoom);
+      gameOrchestrator.scheduleFinishedRoomCleanup(roomCode);
+    }, ACTIVE_DISCONNECT_GRACE_MS);
+
+    pendingAbortTimers.set(roomCode, abortTimer);
   }
 }
 
@@ -409,9 +434,24 @@ function removeDisconnectedLobbyPlayer({ io, roomStore, roomCode, playerId }) {
 }
 
 function scheduleDeleteIfNoConnectedHumans({ roomStore, roomCode, delayMs }) {
-  setTimeout(() => {
+  const timer = setTimeout(() => {
+    const timers = pendingDeleteTimers.get(roomCode);
+    if (timers) {
+      timers.delete(timer);
+      if (timers.size === 0) pendingDeleteTimers.delete(roomCode);
+    }
     roomStore.deleteRoomIfNoConnectedHumans(roomCode);
   }, delayMs);
+
+  if (!pendingDeleteTimers.has(roomCode)) pendingDeleteTimers.set(roomCode, new Set());
+  pendingDeleteTimers.get(roomCode).add(timer);
+}
+
+function cancelPendingDeleteTimers(roomCode) {
+  const timers = pendingDeleteTimers.get(roomCode);
+  if (!timers) return;
+  for (const timer of timers) clearTimeout(timer);
+  pendingDeleteTimers.delete(roomCode);
 }
 
 module.exports = { registerGameSocketHandlers };
