@@ -114,6 +114,7 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
 
       socket.to(code).emit('room_updated', {
         players: serializePlayers(room.players),
+        hostId: room.hostId,
       });
 
       if (room.status === 'playing' && room.game) {
@@ -149,6 +150,7 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
       io.to(roomCode).emit('room_updated', {
         players: serializePlayers(result.room.players),
         status: result.room.status,
+        hostId: result.room.hostId,
       });
     }));
 
@@ -239,6 +241,7 @@ function registerGameSocketHandlers({ io, roomStore, gameOrchestrator }) {
       io.to(roomCode).emit('room_updated', {
         players: serializePlayers(room.players),
         status: 'lobby',
+        hostId: room.hostId,
       });
     }));
 
@@ -332,6 +335,7 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
 
     io.to(roomCode).emit('room_updated', {
       players: serializePlayers(updatedRoom?.players || []),
+      hostId: updatedRoom?.hostId,
     });
     return;
   }
@@ -348,6 +352,7 @@ function handleLeave({ socket, io, roomStore, gameOrchestrator, socketRoomMap, r
 
     io.to(roomCode).emit('room_updated', {
       players: serializePlayers(room.players),
+      hostId: room.hostId,
     });
     setTimeout(() => removeDisconnectedLobbyPlayer({ io, roomStore, roomCode, playerId: socket.id }), LOBBY_DISCONNECT_GRACE_MS);
     return;
@@ -430,6 +435,7 @@ function removeDisconnectedLobbyPlayer({ io, roomStore, roomCode, playerId }) {
 
   io.to(roomCode).emit('room_updated', {
     players: serializePlayers(roomStore.getRoom(roomCode)?.players || []),
+    hostId: roomStore.getRoom(roomCode)?.hostId,
   });
 }
 
