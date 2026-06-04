@@ -88,13 +88,15 @@ export default function App() {
       }
     });
 
-    s.on('room_updated', ({ players, status }) => {
+    s.on('room_updated', ({ players, status, hostId }) => {
       setRoom(prev => {
         if (!prev) return prev;
         const updated = { ...prev, players };
         if (status) updated.status = status;
+        if (hostId) updated.hostId = hostId;
         return updated;
       });
+      if (hostId) setIsHost(getSocket().id === hostId);
       if (status === 'lobby') {
         // Coming back to lobby from result screen means a new game is starting —
         // clear the old session so stale tokens don't cause confusion.
