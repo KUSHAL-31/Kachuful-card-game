@@ -42,6 +42,7 @@ app.use((req, res, next) => {
       status: res.statusCode,
       durationMs: Date.now() - startMs,
       ip: req.ip,
+      userAgent: req.headers['user-agent'] || 'unknown',
     });
   });
   next();
@@ -62,6 +63,20 @@ app.get('/health', (req, res) => {
     connectedPlayers: totalPlayers,
     totalRooms: rooms.length,
   });
+});
+
+// ── Express error handler ─────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  logger.error('HTTP_ERROR', {
+    method: req.method,
+    path: req.path,
+    ip: req.ip,
+    userAgent: req.headers['user-agent'] || 'unknown',
+    error: err.message,
+    stack: err.stack,
+  });
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // ── Socket.IO ─────────────────────────────────────────────────────────────────

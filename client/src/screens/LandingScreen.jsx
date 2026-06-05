@@ -25,12 +25,18 @@ export default function LandingScreen({ onJoined }) {
 
   const SERVER = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
+  const fetchWithTimeout = (url, options = {}, timeoutMs = 10000) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+  };
+
   const handleCreate = async () => {
     if (!name.trim()) return setError('Enter your name');
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${SERVER}/room/create`, {
+      const res = await fetchWithTimeout(`${SERVER}/room/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerName: name.trim() }),
@@ -39,7 +45,17 @@ export default function LandingScreen({ onJoined }) {
       if (!res.ok) return setError(data.error || 'Failed to create room');
       onJoined({ roomCode: data.roomCode, playerName: name.trim(), isCreating: true });
     } catch (e) {
-      setError('Cannot connect to server. Check your internet connection and try again.');
+      console.error('[create_room] fetch failed', {
+        type: e.name,
+        message: e.message,
+        server: SERVER,
+        timestamp: new Date().toISOString(),
+      });
+      if (e.name === 'AbortError') {
+        setError('Server took too long to respond. Please try again.');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -52,12 +68,22 @@ export default function LandingScreen({ onJoined }) {
     setError('');
     try {
       const code = joinCode.trim().toUpperCase();
-      const res = await fetch(`${SERVER}/room/${code}`);
+      const res = await fetchWithTimeout(`${SERVER}/room/${code}`);
       const data = await res.json();
       if (!res.ok) return setError(data.error || 'Room not found');
       onJoined({ roomCode: code, playerName: name.trim(), isCreating: false });
     } catch (e) {
-      setError('Cannot connect to server. Check your internet connection and try again.');
+      console.error('[join_room] fetch failed', {
+        type: e.name,
+        message: e.message,
+        server: SERVER,
+        timestamp: new Date().toISOString(),
+      });
+      if (e.name === 'AbortError') {
+        setError('Server took too long to respond. Please try again.');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

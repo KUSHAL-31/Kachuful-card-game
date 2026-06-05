@@ -33,7 +33,8 @@ function getSocket() {
 
 export default function App() {
   const hasInviteRoom = Boolean(new URLSearchParams(window.location.search).get('room'));
-  const savedSession = loadSession();
+  // Don't load stale session when opening via invite link — the old room should be discarded.
+  const savedSession = hasInviteRoom ? null : loadSession();
   const [screen, setScreen] = useState(hasInviteRoom ? 'landing' : savedSession ? 'landing' : 'intro'); // intro | landing | lobby | game | result
   const [room, setRoom] = useState(null);
   const [playerId, setPlayerId] = useState(null);
@@ -53,6 +54,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // Joining via invite link — drop any old session so the connect handler
+    // doesn't auto-rejoin a different room.
+    if (hasInviteRoom) clearSession();
+
     const s = getSocket();
 
     s.on('connect', () => {
