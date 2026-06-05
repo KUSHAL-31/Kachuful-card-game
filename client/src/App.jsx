@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
+import clientLogger from './utils/clientLogger';
 import IntroScreen from './screens/IntroScreen';
 import LandingScreen from './screens/LandingScreen';
 import LobbyScreen from './screens/LobbyScreen';
@@ -275,7 +276,7 @@ export default function App() {
     });
 
     s.on('error', ({ message }) => {
-      console.error('Game error:', message);
+      clientLogger.error('SOCKET_ERROR', { message, roomCode: roomCodeRef.current, playerName: playerNameRef.current });
       // Auto-reconnect failed (stale session, server restart, room expired) — clean up
       // silently without showing a confusing toast. This covers both fresh page loads
       // and mid-session reconnects where the server no longer has the room.
