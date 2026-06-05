@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import clientLogger from '../utils/clientLogger';
 
 const RULES = [
   { title: '🎯 Objective', body: 'Predict exactly how many tricks you will win each round. Score points only if your prediction is correct.' },
@@ -33,6 +34,7 @@ export default function LandingScreen({ onJoined }) {
 
   const handleCreate = async () => {
     if (!name.trim()) return setError('Enter your name');
+    clientLogger.info('CREATE_ROOM_ATTEMPT', { playerName: name.trim() });
     setLoading(true);
     setError('');
     try {
@@ -45,17 +47,8 @@ export default function LandingScreen({ onJoined }) {
       if (!res.ok) return setError(data.error || 'Failed to create room');
       onJoined({ roomCode: data.roomCode, playerName: name.trim(), isCreating: true });
     } catch (e) {
-      console.error('[create_room] fetch failed', {
-        type: e.name,
-        message: e.message,
-        server: SERVER,
-        timestamp: new Date().toISOString(),
-      });
-      if (e.name === 'AbortError') {
-        setError('Server took too long to respond. Please try again.');
-      } else {
-        setError('Something went wrong. Please try again.');
-      }
+      clientLogger.error('CREATE_ROOM_FETCH_FAILED', { errorType: e.name, errorMessage: e.message, errorStack: e.stack, server: SERVER });
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -64,6 +57,7 @@ export default function LandingScreen({ onJoined }) {
   const handleJoin = async () => {
     if (!name.trim()) return setError('Enter your name');
     if (!joinCode.trim() || joinCode.trim().length !== 6) return setError('Enter a 6-character room code');
+    clientLogger.info('JOIN_ROOM_ATTEMPT', { playerName: name.trim(), roomCode: joinCode.trim().toUpperCase() });
     setLoading(true);
     setError('');
     try {
@@ -73,17 +67,8 @@ export default function LandingScreen({ onJoined }) {
       if (!res.ok) return setError(data.error || 'Room not found');
       onJoined({ roomCode: code, playerName: name.trim(), isCreating: false });
     } catch (e) {
-      console.error('[join_room] fetch failed', {
-        type: e.name,
-        message: e.message,
-        server: SERVER,
-        timestamp: new Date().toISOString(),
-      });
-      if (e.name === 'AbortError') {
-        setError('Server took too long to respond. Please try again.');
-      } else {
-        setError('Something went wrong. Please try again.');
-      }
+      clientLogger.error('JOIN_ROOM_FETCH_FAILED', { errorType: e.name, errorMessage: e.message, errorStack: e.stack, server: SERVER });
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

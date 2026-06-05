@@ -39,6 +39,31 @@ function createRoomRouter(roomStore) {
     return res.json({ roomCode: room.roomCode, playerCount: room.players.length });
   });
 
+  // Client-side log forwarding — lets frontend errors appear in Railway logs.
+  // Simple per-IP rate limit: max 20 log calls per minute.
+  const logRateMap = new Map();
+  router.post('/log', (req, res) => {
+    const ip = req.ip;
+    const now = Date.now();
+    const entry = logRateMap.get(ip) || { count: 0, windowStart: now };
+    if (now - entry.windowStart > 60_000) {
+      entry.count = 0;
+      entry.windowStart = now;
+    }
+    entry.count++;
+    logRateMap.set(ip, entry);
+    if (entry.count > 20) return res.status(429).end();
+
+    const { level = 'info', event, data } = req.body;
+    const safeLevel = ['info', 'warn', 'error'].includes(level) ? level : 'info';
+    logger[safeLevel](`CLIENT_${event || 'LOG'}`, {
+      ...data,
+      ip,
+      userAgent: req.headers['user-agent'] || 'unknown',
+    });
+    res.status(204).end();
+  });
+
   return router;
 }
 
