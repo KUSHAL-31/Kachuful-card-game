@@ -34,8 +34,7 @@ function getSocket() {
 
 export default function App() {
   const hasInviteRoom = Boolean(new URLSearchParams(window.location.search).get('room'));
-  // Don't load stale session when opening via invite link — the old room should be discarded.
-  const savedSession = hasInviteRoom ? null : loadSession();
+  const savedSession = loadSession();
   const [screen, setScreen] = useState(hasInviteRoom ? 'landing' : savedSession ? 'landing' : 'intro'); // intro | landing | lobby | game | result
   const [room, setRoom] = useState(null);
   const [playerId, setPlayerId] = useState(null);
@@ -55,22 +54,39 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Joining via invite link — drop any old session so the connect handler
-    // doesn't auto-rejoin a different room.
-    if (hasInviteRoom) clearSession();
-
     const s = getSocket();
 
-    s.on('connect', () => {
-      // Re-register with server after reconnect using token if available
+    s.on('connect', async () => {
       const session = loadSession();
       const roomCode = roomCodeRef.current || session?.roomCode;
       const playerName = playerNameRef.current || session?.playerName;
       const token = session?.token;
-      if (roomCode && playerName) {
-        pendingAutoReconnectRef.current = true;
-        s.emit('join_room', { roomCode, playerName, isCreating: false, token });
+      if (!roomCode || !playerName) return;
+
+      // If opening via an invite link to a different room, only auto-rejoin the
+      // saved room if a game is actively in progress there. Otherwise clear the
+      // session so the invite room takes priority.
+      const inviteCode = new URLSearchParams(window.location.search).get('room')?.toUpperCase();
+      if (inviteCode && inviteCode !== roomCode) {
+        try {
+          const res = await fetch(`${SOCKET_URL}/room/${roomCode}`);
+          const data = await res.json();
+          const isPlaying = !res.ok && data.error === 'Game in progress';
+          if (!isPlaying) {
+            clearSession();
+            roomCodeRef.current = null;
+            playerNameRef.current = null;
+            return;
+          }
+          // isPlaying = true → fall through and rejoin the active game
+        } catch {
+          // Can't reach server to check — safe default is to proceed with rejoin
+          // rather than wipe the session and strand someone mid-game.
+        }
       }
+
+      pendingAutoReconnectRef.current = true;
+      s.emit('join_room', { roomCode, playerName, isCreating: false, token });
     });
 
     s.on('room_joined', ({ room, playerId: pid, isHost: host, token }) => {
