@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const logger = require('./utils/logger');
+const { HEALTH_SNAPSHOT_INTERVAL_MS } = require('./config/appConfig');
 const roomStore = require('./state/roomStore');
 const { createRoomRouter } = require('./routes/roomRoutes');
 const { GameOrchestrator } = require('./services/gameOrchestrator');
@@ -89,6 +90,19 @@ const io = new Server(server, {
 
 const gameOrchestrator = new GameOrchestrator({ io, roomStore });
 registerGameSocketHandlers({ io, roomStore, gameOrchestrator });
+
+// ── Periodic health snapshot ──────────────────────────────────────────────────
+const healthInterval = setInterval(() => {
+  const rooms = roomStore.getAllRooms();
+  logger.info('HEALTH_SNAPSHOT', {
+    totalRooms: rooms.length,
+    activeGames: rooms.filter(r => r.status === 'playing').length,
+    lobbyRooms: rooms.filter(r => r.status === 'lobby').length,
+    connectedPlayers: rooms.reduce((sum, r) => sum + r.players.filter(p => !p.isBot && p.isConnected).length, 0),
+    uptimeSeconds: Math.floor(process.uptime()),
+  });
+}, HEALTH_SNAPSHOT_INTERVAL_MS);
+healthInterval.unref();
 
 // ── Graceful shutdown ─────────────────────────────────────────────────────────
 function shutdown(signal) {
