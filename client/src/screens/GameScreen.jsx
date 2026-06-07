@@ -234,6 +234,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
   const [trickWinner, setTrickWinner] = useState(null);
   const [displayTrick, setDisplayTrick] = useState([]);
   const [cardSubmitted, setCardSubmitted] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
   const [flyingCards, setFlyingCards] = useState([]);
   const [lastSeenCount, setLastSeenCount] = useState(0);
   const unreadCount = sidebar === 'chat' ? 0 : Math.max(0, chatMessages.length - lastSeenCount);
@@ -318,6 +319,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
     if (cardSubmitTimerRef.current) clearTimeout(cardSubmitTimerRef.current);
     lastPlayedCardRef.current = null;
     setCardSubmitted(false);
+    setSelectedCard(null);
   }, [currentTurnIndex, currentTrick.length]);
 
   useEffect(() => {
@@ -600,10 +602,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
         <div style={{
           flexShrink: 0,
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 6,
-          paddingBottom: isMyBidTurn ? 'clamp(130px, 25vh, 210px)' : (phase === 'playing' ? 58 : 6),
+          justifyContent: 'center',
+          paddingBottom: isMyBidTurn ? 'clamp(130px, 25vh, 210px)' : (phase === 'playing' ? 58 : 58),
         }}>
           <Hand
             hand={myHand}
@@ -624,6 +624,8 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
             leadSuit={leadSuit}
             trumpSuit={trumpSuit}
             phase={phase}
+            selectedCard={selectedCard}
+            onSelectCard={setSelectedCard}
           />
         </div>
       </div>
@@ -698,7 +700,7 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
           bottom: 0,
           left: 0,
           right: 0,
-          padding: '12px',
+          padding: '10px 16px',
           background: isMyTurn ? 'rgba(12,52,28,0.96)' : 'rgba(7,20,38,0.94)',
           borderTop: isMyTurn ? '1px solid rgba(110,231,183,0.35)' : '1px solid rgba(255,224,138,0.22)',
           textAlign: 'center',
@@ -708,12 +710,37 @@ export default function GameScreen({ gameState, myHand, playerId, roomCode, isHo
           boxShadow: '0 -12px 30px rgba(0,0,0,0.35)',
           backdropFilter: 'blur(12px)',
           zIndex: 190,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
         }}>
-          {isMyTurnVisible
-            ? 'Your turn to play!'
-            : isMyTurn
-            ? 'You won the trick!'
-            : `Waiting for ${currentPlayer?.name || 'player'} to play...`}
+          {selectedCard && isMyTurnVisible ? (
+            <>
+              <span>Tap again to confirm</span>
+              <button
+                onClick={() => setSelectedCard(null)}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  color: '#FFF6E6',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  padding: '3px 12px',
+                  borderRadius: 999,
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          ) : isMyTurnVisible ? (
+            'Tap twice or drag a card up'
+          ) : isMyTurn ? (
+            'You won the trick!'
+          ) : (
+            `Waiting for ${currentPlayer?.name || 'player'} to play...`
+          )}
         </div>
       )}
 

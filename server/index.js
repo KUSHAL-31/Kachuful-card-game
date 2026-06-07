@@ -51,6 +51,11 @@ app.use((req, res, next) => {
 
 app.use(createRoomRouter(roomStore));
 
+// ── Ping endpoint (lightweight keep-alive for UptimeRobot) ───────────────────
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
 // ── Health endpoint ───────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
   const rooms = roomStore.getAllRooms();

@@ -2,8 +2,7 @@ import React, { useRef, useState } from 'react';
 import Card from './Card';
 import { sortHand, isValidPlay } from '../utils/cardUtils';
 
-export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, phase }) {
-  const [selectedCard, setSelectedCard] = useState(null);
+export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, phase, selectedCard, onSelectCard }) {
   const [dragState, setDragState] = useState(null);
   const dragRef = useRef(null);
 
@@ -17,13 +16,10 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
     if (!valid) return;
 
     if (selectedCard && selectedCard.suit === card.suit && selectedCard.rank === card.rank) {
-      // Second click confirms play
-      onPlayCard(card, {
-        sourceRect: sourceElement?.getBoundingClientRect?.(),
-      });
-      setSelectedCard(null);
+      onPlayCard(card, { sourceRect: sourceElement?.getBoundingClientRect?.() });
+      onSelectCard(null);
     } else {
-      setSelectedCard(card);
+      onSelectCard(card);
     }
   };
 
@@ -71,7 +67,7 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
 
     if (current.moved && current.y < (isMobile ? -64 : -72)) {
       onPlayCard(card, { sourceRect });
-      setSelectedCard(null);
+      onSelectCard(null);
       return;
     }
 
@@ -88,7 +84,6 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
   const isMobile = window.innerWidth < 768;
   const cardWidth = isMobile ? 78 : 80;
   const availableWidth = Math.max(cardWidth, window.innerWidth - (isMobile ? 20 : 64));
-  // Tighter natural spacing for larger hands so all cards stay on screen
   const naturalStep = isMobile
     ? (sorted.length > 8 ? 24 : sorted.length > 6 ? 30 : sorted.length > 4 ? 36 : 42)
     : (sorted.length > 8 ? 28 : sorted.length > 6 ? 32 : 38);
@@ -102,97 +97,60 @@ export default function Hand({ hand, onPlayCard, isMyTurn, leadSuit, trumpSuit, 
   const handWidth = Math.min(availableWidth, fanWidth);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      {isMyTurn && phase === 'playing' && (
-        <div style={{
-          color: '#FFE08A',
-          fontSize: '0.88rem',
-          fontWeight: 800,
-          letterSpacing: '0.05em',
-          animation: 'pulse 1.5s ease infinite',
-        }}>
-          {selectedCard ? 'Click again to confirm' : 'Tap twice or drag a card up'}
-        </div>
-      )}
+    <div style={{
+      position: 'relative',
+      width: handWidth,
+      height: 'clamp(108px, 19vh, 164px)',
+      paddingTop: 'clamp(12px, 2vh, 18px)',
+      overflowX: 'visible',
+      overflowY: 'visible',
+    }}>
+      {sorted.map((card, i) => {
+        const isSelected = selectedCard?.suit === card.suit && selectedCard?.rank === card.rank;
+        const valid = isMyTurn && phase === 'playing' ? isValidPlay(card, hand, leadSuit) : true;
+        const disabled = !isMyTurn || phase !== 'playing' || !valid;
+        const faded = isMyTurn && phase === 'playing' && !valid;
+        const centerOffset = i - (sorted.length - 1) / 2;
+        const rotateScale = sorted.length > 8 ? 3 : sorted.length > 6 ? 4 : 5.5;
+        const rotate = Math.max(-18, Math.min(18, centerOffset * rotateScale));
+        const curveScale = isMobile ? (sorted.length > 7 ? 2 : 3.2) : 2.6;
+        const curveY = Math.abs(centerOffset) * curveScale;
+        const left = (handWidth - fanWidth) / 2 + i * xStep;
+        const isDragging = dragState?.card?.suit === card.suit && dragState?.card?.rank === card.rank;
+        const dragTransform = isDragging
+          ? `translate(${dragState.x}px, ${dragState.y}px) rotate(${rotate}deg) scale(1.04)`
+          : `rotate(${rotate}deg)`;
 
-      {selectedCard && isMyTurn && (
-        <button
-          onClick={() => setSelectedCard(null)}
-          style={{
-            background: 'rgba(7,20,38,0.86)',
-            color: '#FFF6E6',
-            border: '1px solid rgba(255,255,255,0.16)',
-            padding: isMobile ? '7px 18px' : '4px 12px',
-            borderRadius: 999,
-            fontSize: isMobile ? '0.88rem' : '0.78rem',
-            fontWeight: 800,
-            cursor: 'pointer',
-            boxShadow: '0 10px 22px rgba(0,0,0,0.24)',
-          }}
-        >
-          Cancel
-        </button>
-      )}
-
-      <div style={{
-        position: 'relative',
-        width: handWidth,
-        height: 'clamp(108px, 19vh, 164px)',
-        paddingTop: 'clamp(12px, 2vh, 18px)',
-        overflowX: 'visible',
-        overflowY: 'visible',
-      }}>
-        {sorted.map((card, i) => {
-          const isSelected = selectedCard?.suit === card.suit && selectedCard?.rank === card.rank;
-          const valid = isMyTurn && phase === 'playing' ? isValidPlay(card, hand, leadSuit) : true;
-          const disabled = !isMyTurn || phase !== 'playing' || !valid;
-          // Fade only invalid cards when it's your turn — so the legal plays stand out.
-          // When it's not your turn (or during bidding), show all cards at full brightness.
-          const faded = isMyTurn && phase === 'playing' && !valid;
-          const centerOffset = i - (sorted.length - 1) / 2;
-          const rotateScale = sorted.length > 8 ? 3 : sorted.length > 6 ? 4 : 5.5;
-          const rotate = Math.max(-18, Math.min(18, centerOffset * rotateScale));
-          const curveScale = isMobile ? (sorted.length > 7 ? 2 : 3.2) : 2.6;
-          const curveY = Math.abs(centerOffset) * curveScale;
-          const left = (handWidth - fanWidth) / 2 + i * xStep;
-          const isDragging = dragState?.card?.suit === card.suit && dragState?.card?.rank === card.rank;
-          const dragTransform = isDragging
-            ? `translate(${dragState.x}px, ${dragState.y}px) rotate(${rotate}deg) scale(1.04)`
-            : `rotate(${rotate}deg)`;
-
-          return (
-            <div
-              key={`${card.suit}-${card.rank}`}
-              onPointerDown={(event) => startDrag(event, card, disabled)}
-              onPointerMove={moveDrag}
-              onPointerUp={(event) => endDrag(event, card)}
-              onPointerCancel={cancelDrag}
-              style={{
-                position: 'absolute',
-                left,
-                top: 18 + curveY,
-                zIndex: isDragging ? 200 : isSelected ? 100 : i + 1,
-                transform: dragTransform,
-                transformOrigin: '50% 92%',
-                transition: isDragging ? 'none' : 'left 0.2s ease, top 0.2s ease, transform 0.2s ease',
-                touchAction: disabled ? 'auto' : 'none',
-              }}
-            >
-              <Card
-                card={card}
-                disabled={disabled}
-                faded={faded}
-                selected={isSelected}
-                isTrump={card.suit === trumpSuit}
-                size={isMobile ? 'mobile' : 'normal'}
-                style={{ cursor: disabled ? 'default' : isDragging ? 'grabbing' : 'grab' }}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      <div style={{ minHeight: 1 }} />
+        return (
+          <div
+            key={`${card.suit}-${card.rank}`}
+            onPointerDown={(event) => startDrag(event, card, disabled)}
+            onPointerMove={moveDrag}
+            onPointerUp={(event) => endDrag(event, card)}
+            onPointerCancel={cancelDrag}
+            style={{
+              position: 'absolute',
+              left,
+              top: 18 + curveY,
+              zIndex: isDragging ? 200 : isSelected ? 100 : i + 1,
+              transform: dragTransform,
+              transformOrigin: '50% 92%',
+              transition: isDragging ? 'none' : 'left 0.2s ease, top 0.2s ease, transform 0.2s ease',
+              touchAction: disabled ? 'auto' : 'none',
+            }}
+          >
+            <Card
+              card={card}
+              disabled={disabled}
+              faded={faded}
+              selected={isSelected}
+              isTrump={card.suit === trumpSuit}
+              size={isMobile ? 'mobile' : 'normal'}
+              style={{ cursor: disabled ? 'default' : isDragging ? 'grabbing' : 'grab' }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -23,14 +23,22 @@ function createRoomRouter(roomStore) {
 
   router.get('/room/:code', (req, res) => {
     const code = req.params.code.toUpperCase();
+    const playerName = req.query.playerName?.trim() || null;
     const room = roomStore.getRoom(code);
     if (!room) {
       logger.warn('JOIN_REJECTED', { roomCode: code, reason: 'room_not_found', ip: req.ip });
       return res.status(404).json({ error: 'Room not found' });
     }
     if (room.status === 'playing') {
-      logger.warn('JOIN_REJECTED', { roomCode: code, reason: 'game_in_progress', ip: req.ip });
-      return res.status(400).json({ error: 'Game in progress' });
+      // Allow rejoin if this player was already in the game and got disconnected
+      const isDisconnectedPlayer = playerName &&
+        room.players.some(p => p.name === playerName && !p.isConnected && !p.isBot);
+      if (!isDisconnectedPlayer) {
+        logger.warn('JOIN_REJECTED', { roomCode: code, reason: 'game_in_progress', ip: req.ip });
+        return res.status(400).json({ error: 'Game in progress' });
+      }
+      logger.info('REJOIN_ALLOWED', { roomCode: code, playerName });
+      return res.json({ roomCode: room.roomCode, canRejoin: true });
     }
     if (room.players.length >= MAX_PLAYERS) {
       logger.warn('JOIN_REJECTED', { roomCode: code, reason: 'room_full', playerCount: room.players.length, ip: req.ip });

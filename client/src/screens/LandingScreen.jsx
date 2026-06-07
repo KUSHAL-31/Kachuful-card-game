@@ -62,7 +62,7 @@ export default function LandingScreen({ onJoined }) {
     setError('');
     try {
       const code = joinCode.trim().toUpperCase();
-      const res = await fetchWithTimeout(`${SERVER}/room/${code}`);
+      const res = await fetchWithTimeout(`${SERVER}/room/${code}?playerName=${encodeURIComponent(name.trim())}`);
       const data = await res.json();
       if (!res.ok) return setError(data.error || 'Room not found');
       onJoined({ roomCode: code, playerName: name.trim(), isCreating: false });
